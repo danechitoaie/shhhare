@@ -1,0 +1,16 @@
+# Shhhare!
+/shhhare/.env
+/shhhare/target/
+/shhhare/files/app/
+/shhhare/files/doc/
+
+# Shhhare! (app)
+/shhhare_app/.tanstack/
+/shhhare_app/node_modules/
+
+# Shhhare! (doc)
+/shhhare_doc/node_modules/
+
+# MacOS
+.DS_Store
+
