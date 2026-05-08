@@ -1,0 +1,33 @@
+{
+    "name": "shhhare-doc",
+    "private": true,
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vue-tsc -b && vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "vue": "^3.5.32"
+    },
+    "devDependencies": {
+        "@scalar/api-reference": "^1.55.3",
+        "@scalar/openapi-parser": "^0.28.2",
+        "@types/node": "^24.12.2",
+        "@vitejs/plugin-vue": "^6.0.6",
+        "@vue/tsconfig": "^0.9.1",
+        "prettier": "^3.8.3",
+        "typescript": "~6.0.2",
+        "vite": "^8.0.10",
+        "vue-tsc": "^3.2.7"
+    },
+    "prettier": {
+        "semi": true,
+        "tabWidth": 4,
+        "printWidth": 160
+    },
+    "volta": {
+        "node": "24.15.0"
+    }
+}

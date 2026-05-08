@@ -1,0 +1,5 @@
+{
+    "files.associations": {
+        "**/shhhare_app/src/main.css": "tailwindcss"
+    }
+}

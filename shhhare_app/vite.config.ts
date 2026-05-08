@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
         base: "",
         publicDir: "static",
         build: {
-            chunkSizeWarningLimit: 2048,
+            chunkSizeWarningLimit: 4096,
             sourcemap: mode !== "production",
             rollupOptions: {
                 input: "src/main.tsx",
