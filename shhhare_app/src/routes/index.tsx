@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Flame, Eye, Clock, Calendar, CalendarDays, ShieldCheck, ArrowRight } from "lucide-react";
+import { Flame, Eye, Clock, Calendar, CalendarDays, ShieldCheck, Send } from "lucide-react";
 import { Num } from "@/components/ui/num";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -46,10 +46,18 @@ function Index() {
                             aria-labelledby="expiration-label"
                             className="mt-2 p-0.75 relative inline-flex items-center w-full bg-muted rounded-md"
                         >
+                            <span
+                                aria-hidden="true"
+                                className="absolute top-0.75 bottom-0.75 left-0.75 rounded-[6px] bg-background shadow-xs transition-transform duration-200 ease-out"
+                                style={{
+                                    width: "calc((100% - 0.375rem) / 3)",
+                                    transform: `translateX(${ttl === "HOUR" ? 0 : ttl === "DAY" ? 100 : 200}%)`,
+                                }}
+                            />
                             <button
                                 role="tab"
                                 aria-selected={ttl === "HOUR"}
-                                className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 aria-selected:bg-background aria-selected:text-foreground aria-selected:shadow-xs"
+                                className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 hover:text-foreground aria-selected:text-foreground"
                                 onClick={() => setTtl("HOUR")}
                             >
                                 <Clock className="w-3.25 h-3.25" />1 hour
@@ -58,7 +66,7 @@ function Index() {
                             <button
                                 role="tab"
                                 aria-selected={ttl === "DAY"}
-                                className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 aria-selected:bg-background aria-selected:text-foreground aria-selected:shadow-xs"
+                                className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 hover:text-foreground aria-selected:text-foreground"
                                 onClick={() => setTtl("DAY")}
                             >
                                 <Calendar className="w-3.25 h-3.25" />1 day
@@ -67,7 +75,7 @@ function Index() {
                             <button
                                 role="tab"
                                 aria-selected={ttl === "WEEK"}
-                                className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 aria-selected:bg-background aria-selected:text-foreground aria-selected:shadow-xs"
+                                className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 hover:text-foreground aria-selected:text-foreground"
                                 onClick={() => setTtl("WEEK")}
                             >
                                 <CalendarDays className="w-3.25 h-3.25" />1 week
@@ -79,10 +87,18 @@ function Index() {
                             <Num>04</Num>Access
                         </Label>
                         <div role="tablist" aria-labelledby="access-label" className="mt-2 p-0.75 relative inline-flex items-center w-full bg-muted rounded-md">
+                            <span
+                                aria-hidden="true"
+                                className="absolute top-0.75 bottom-0.75 left-0.75 rounded-[6px] bg-background shadow-xs transition-transform duration-200 ease-out"
+                                style={{
+                                    width: "calc((100% - 0.375rem) / 2)",
+                                    transform: `translateX(${bar ? 0 : 100}%)`,
+                                }}
+                            />
                             <button
                                 role="tab"
                                 aria-selected={bar}
-                                className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 aria-selected:bg-background aria-selected:text-foreground aria-selected:shadow-xs"
+                                className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 hover:text-foreground aria-selected:text-foreground"
                                 onClick={() => setBar(true)}
                             >
                                 <Flame className="w-3.25 h-3.25" />
@@ -92,7 +108,7 @@ function Index() {
                             <button
                                 role="tab"
                                 aria-selected={!bar}
-                                className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 aria-selected:bg-background aria-selected:text-foreground aria-selected:shadow-xs"
+                                className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 hover:text-foreground aria-selected:text-foreground"
                                 onClick={() => setBar(false)}
                             >
                                 <Eye className="w-3.25 h-3.25" />
@@ -109,7 +125,7 @@ function Index() {
                     </span>
 
                     <Button type="button" size="lg" className="cursor-pointer px-6">
-                        <ShieldCheck className="w-3.5 h-3.5" /> Encrypt &amp; create link
+                        <Send className="w-3.5 h-3.5" /> Shhhare it!
                     </Button>
                 </div>
             </div>
