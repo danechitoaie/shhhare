@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { fmtBytes } from "@/lib/utils";
-import { encrypt, fileToBase64, type EncryptResult } from "@/lib/crypto";
+import { fileToBase64 } from "@/lib/base64";
+import { encrypt, type EncryptResult } from "@/lib/crypto";
 
 export const Route = createFileRoute("/")({
     component: Index,
