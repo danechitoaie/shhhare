@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import type { DragEvent, ChangeEvent } from "react";
-import { Flame, Eye, Clock, Calendar, CalendarDays, ShieldCheck, Send, File as FileIcon, Paperclip, Plus, X } from "lucide-react";
+import { Flame, Eye, Clock, Calendar, CalendarDays, ShieldCheck, Send, File as FileIcon, Paperclip, Plus, X, Loader2 } from "lucide-react";
 import { Num } from "@/components/ui/num";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -22,9 +22,22 @@ function Index() {
     const [ttl, setTtl] = useState<"HOUR" | "DAY" | "WEEK">("HOUR");
     const [bar, setBar] = useState<boolean>(true);
     const [payload, setPayload] = useState<EncryptResult | null>(null);
+    const [encrypting, setEncrypting] = useState<boolean>(false);
+
+    const MAX_BYTES = 1024 * 1024;
+    const totalBytes = payload?.ciphertext.length ?? 0;
+    const over = totalBytes > MAX_BYTES;
+    const pct = Math.min(100, (totalBytes / MAX_BYTES) * 100);
 
     useEffect(() => {
+        if (text === "" && files.length === 0) {
+            setPayload(null);
+            setEncrypting(false);
+            return;
+        }
+
         let cancelled = false;
+        setEncrypting(true);
         const handle = setTimeout(async () => {
             try {
                 const f = await Promise.all(
@@ -47,10 +60,12 @@ function Index() {
                 }
 
                 setPayload(result);
+                setEncrypting(false);
                 console.log(result);
             } catch {
                 if (!cancelled) {
                     setPayload(null);
+                    setEncrypting(false);
                 }
             }
         }, 500);
@@ -111,7 +126,7 @@ function Index() {
                 <div className="pt-6 pb-6">
                     <Label htmlFor="file">
                         <Num>02</Num>Attachments
-                        <span className="ml-auto font-mono text-xs text-muted-foreground">optional · drag &amp; drop</span>
+                        <span className="ml-auto font-mono text-xs text-muted-foreground">(optional · drag &amp; drop)</span>
                     </Label>
                     <div
                         className={
@@ -255,14 +270,33 @@ function Index() {
                     </div>
                 </div>
 
+                <div className="pt-6 pb-2">
+                    <div className="flex items-center justify-between text-[13px]">
+                        <span className="text-muted-foreground">
+                            Payload
+                            <span className="ml-2 text-[11px] text-muted-foreground/80">(size of the data after encryption)</span>
+                        </span>
+                        <span className={"font-mono " + (over ? "text-destructive" : "text-foreground")}>
+                            {fmtBytes(totalBytes)} <span className="text-muted-foreground">/ {fmtBytes(MAX_BYTES)}</span>
+                        </span>
+                    </div>
+                    <div className={"mt-2 h-1.5 w-full rounded-full overflow-hidden " + (over ? "bg-destructive/20" : "bg-muted")}>
+                        <div
+                            className={"h-full transition-[width] duration-200 ease-out " + (over ? "bg-destructive" : "bg-foreground")}
+                            style={{ width: `${pct}%` }}
+                        />
+                    </div>
+                    {over && <div className="mt-1.5 text-[12px] text-destructive font-mono">over by {fmtBytes(totalBytes - MAX_BYTES)}</div>}
+                </div>
+
                 <div className="flex items-center justify-between gap-3 py-4 px-12 mt-6 -mx-12 -mb-8 border-t border-border bg-[color-mix(in_oklab,var(--muted)_60%,transparent)] text-[13px] rounded-b-lg">
                     <span className="inline-flex items-center gap-2 text-muted-foreground">
                         <ShieldCheck className="w-3.5 h-3.5" />
                         <span>AES-256-GCM end-to-end encryption · key in URL fragment</span>
                     </span>
 
-                    <Button type="button" size="lg" className="cursor-pointer px-6">
-                        <Send className="w-3.5 h-3.5" /> Shhhare it!
+                    <Button type="button" size="lg" className="cursor-pointer px-6" disabled={encrypting || over || !payload}>
+                        {encrypting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />} Shhhare it!
                     </Button>
                 </div>
             </div>

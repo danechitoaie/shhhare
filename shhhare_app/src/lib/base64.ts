@@ -11,6 +11,16 @@ export function fileToBase64(file: File): Promise<string> {
     });
 }
 
+export function base64ToFile(base64: string, filename: string, mimeType: string = "application/octet-stream"): File {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+
+    return new File([bytes], filename, { type: mimeType });
+}
+
 export function bytesToBase64Url(bytes: Uint8Array): string {
     let binary = "";
     for (let i = 0; i < bytes.byteLength; i++) {
