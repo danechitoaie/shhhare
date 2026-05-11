@@ -13,26 +13,36 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-    const [ttl, setTtl] = useState<"HOUR" | "DAY" | "WEEK">("HOUR");
-    const [bar, setBar] = useState<boolean>(true);
+    const [text, setText] = useState<string>("");
     const [dragging, setDragging] = useState<boolean>(false);
     const [files, setFiles] = useState<File[]>([]);
     const fileRef = useRef<HTMLInputElement>(null);
+    const [ttl, setTtl] = useState<"HOUR" | "DAY" | "WEEK">("HOUR");
+    const [bar, setBar] = useState<boolean>(true);
 
     const addFiles = (incoming: FileList | File[]) => {
         const arr = Array.from(incoming);
-        if (arr.length === 0) return;
+        if (arr.length === 0) {
+            return;
+        }
+
         setFiles((prev) => [...prev, ...arr]);
     };
 
     const onDropFiles = (e: DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         setDragging(false);
-        if (e.dataTransfer?.files) addFiles(e.dataTransfer.files);
+
+        if (e.dataTransfer?.files) {
+            addFiles(e.dataTransfer.files);
+        }
     };
 
     const onPickFiles = (e: ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) addFiles(e.target.files);
+        if (e.target.files) {
+            addFiles(e.target.files);
+        }
+
         e.target.value = "";
     };
 
@@ -52,6 +62,8 @@ function Index() {
                         className="mt-2 py-3.5 px-4 min-h-58 resize-y font-mono placeholder:text-muted-foreground"
                         placeholder="Type the thing only they should see..."
                         spellCheck={false}
+                        value={text}
+                        onChange={(e) => setText(e.target.value)}
                     />
                 </div>
 
@@ -205,7 +217,7 @@ function Index() {
                 <div className="flex items-center justify-between gap-3 py-4 px-12 mt-6 -mx-12 -mb-8 border-t border-border bg-[color-mix(in_oklab,var(--muted)_60%,transparent)] text-[13px] rounded-b-lg">
                     <span className="inline-flex items-center gap-2 text-muted-foreground">
                         <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>End-to-end encrypted · key in URL fragment</span>
+                        <span>AES-256-GCM end-to-end encryption · key in URL fragment</span>
                     </span>
 
                     <Button type="button" size="lg" className="cursor-pointer px-6">
