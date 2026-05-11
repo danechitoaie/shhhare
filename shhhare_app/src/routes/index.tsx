@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { fmtBytes } from "@/lib/utils";
 import { fileToBase64 } from "@/lib/base64";
 import { encrypt, type EncryptResult } from "@/lib/crypto";
+import { APP_DATA } from "@/lib/config";
 
 export const Route = createFileRoute("/")({
     component: Index,
@@ -24,7 +25,7 @@ function Index() {
     const [payload, setPayload] = useState<EncryptResult | null>(null);
     const [encrypting, setEncrypting] = useState<boolean>(false);
 
-    const MAX_BYTES = 1024 * 1024;
+    const MAX_BYTES = APP_DATA.b;
     const totalBytes = payload?.ciphertext.length ?? 0;
     const over = totalBytes > MAX_BYTES;
     const pct = Math.min(100, (totalBytes / MAX_BYTES) * 100);
