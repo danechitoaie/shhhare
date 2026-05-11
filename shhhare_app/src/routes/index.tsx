@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { Flame, Eye, Clock, Calendar, CalendarDays, ShieldCheck, Send } from "lucide-react";
+import { useRef, useState } from "react";
+import type { DragEvent, ChangeEvent } from "react";
+import { Flame, Eye, Clock, Calendar, CalendarDays, ShieldCheck, Send, File as FileIcon, Paperclip, Plus, X } from "lucide-react";
 import { Num } from "@/components/ui/num";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { fmtBytes } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
     component: Index,
@@ -13,6 +15,30 @@ export const Route = createFileRoute("/")({
 function Index() {
     const [ttl, setTtl] = useState<"HOUR" | "DAY" | "WEEK">("HOUR");
     const [bar, setBar] = useState<boolean>(true);
+    const [dragging, setDragging] = useState<boolean>(false);
+    const [files, setFiles] = useState<File[]>([]);
+    const fileRef = useRef<HTMLInputElement>(null);
+
+    const addFiles = (incoming: FileList | File[]) => {
+        const arr = Array.from(incoming);
+        if (arr.length === 0) return;
+        setFiles((prev) => [...prev, ...arr]);
+    };
+
+    const onDropFiles = (e: DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setDragging(false);
+        if (e.dataTransfer?.files) addFiles(e.dataTransfer.files);
+    };
+
+    const onPickFiles = (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) addFiles(e.target.files);
+        e.target.value = "";
+    };
+
+    const removeFile = (i: number) => {
+        setFiles((prev) => prev.filter((_, idx) => idx !== i));
+    };
 
     return (
         <div className="px-4">
@@ -32,8 +58,66 @@ function Index() {
                 <div className="pt-6 pb-6">
                     <Label htmlFor="file">
                         <Num>02</Num>Attachments
-                        <span className="ml-auto font-mono text-muted-foreground">optional · drag &amp; drop</span>
+                        <span className="ml-auto font-mono text-xs text-muted-foreground">optional · drag &amp; drop</span>
                     </Label>
+                    <div
+                        className={
+                            "mt-2 rounded-md border border-dashed bg-muted/30 p-3 transition-colors " +
+                            (dragging ? "border-foreground bg-muted/60" : "border-border")
+                        }
+                        onDragOver={(e) => {
+                            e.preventDefault();
+                            setDragging(true);
+                        }}
+                        onDragLeave={() => setDragging(false)}
+                        onDrop={onDropFiles}
+                    >
+                        {files.length > 0 ? (
+                            <div className="flex flex-col gap-1.5">
+                                {files.map((f, i) => (
+                                    <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded-sm bg-background border text-[13px]">
+                                        <FileIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                        <span className="font-mono truncate flex-1" title={f.name}>
+                                            {f.name}
+                                        </span>
+                                        <span className="font-mono text-xs text-muted-foreground shrink-0">{fmtBytes(f.size)}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeFile(i)}
+                                            aria-label="Remove"
+                                            className="inline-flex items-center justify-center w-5 h-5 rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2.5 p-1 text-[13px] text-muted-foreground">
+                                <Paperclip className="w-3.5 h-3.5" />
+                                <span>
+                                    Drop files here, or{" "}
+                                    <button
+                                        type="button"
+                                        onClick={() => fileRef.current?.click()}
+                                        className="bg-transparent border-0 p-0 text-foreground underline hover:no-underline cursor-pointer font-inherit"
+                                    >
+                                        browse
+                                    </button>
+                                </span>
+                            </div>
+                        )}
+                        {files.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => fileRef.current?.click()}
+                                className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded-sm text-[13px] text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
+                            >
+                                <Plus className="w-3.5 h-3.5" /> add more
+                            </button>
+                        )}
+                        <input ref={fileRef} id="file" type="file" multiple className="sr-only" onChange={onPickFiles} />
+                    </div>
                 </div>
 
                 <div className="pt-6 pb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
