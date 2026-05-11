@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DragEvent, ChangeEvent } from "react";
 import { Flame, Eye, Clock, Calendar, CalendarDays, ShieldCheck, Send, File as FileIcon, Paperclip, Plus, X } from "lucide-react";
 import { Num } from "@/components/ui/num";
@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { fmtBytes } from "@/lib/utils";
+import { encrypt, fileToBase64, type EncryptResult } from "@/lib/crypto";
 
 export const Route = createFileRoute("/")({
     component: Index,
@@ -19,6 +20,45 @@ function Index() {
     const fileRef = useRef<HTMLInputElement>(null);
     const [ttl, setTtl] = useState<"HOUR" | "DAY" | "WEEK">("HOUR");
     const [bar, setBar] = useState<boolean>(true);
+    const [payload, setPayload] = useState<EncryptResult | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        const handle = setTimeout(async () => {
+            try {
+                const f = await Promise.all(
+                    files.map(async (file) => ({
+                        n: file.name,
+                        c: await fileToBase64(file),
+                        s: file.size,
+                    })),
+                );
+
+                if (cancelled) {
+                    return;
+                }
+
+                const json = JSON.stringify({ t: text, f });
+                const result = await encrypt(json);
+
+                if (cancelled) {
+                    return;
+                }
+
+                setPayload(result);
+                console.log(result);
+            } catch {
+                if (!cancelled) {
+                    setPayload(null);
+                }
+            }
+        }, 500);
+
+        return () => {
+            cancelled = true;
+            clearTimeout(handle);
+        };
+    }, [text, files]);
 
     const addFiles = (incoming: FileList | File[]) => {
         const arr = Array.from(incoming);
