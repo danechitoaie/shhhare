@@ -9,12 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from "./routes/__root"
-import { Route as AboutRouteImport } from "./routes/about"
+import { Route as SplatRouteImport } from "./routes/$"
 import { Route as IndexRouteImport } from "./routes/index"
+import { Route as SSecretKeyRouteImport } from "./routes/s.$secretKey"
 
-const AboutRoute = AboutRouteImport.update({
-  id: "/about",
-  path: "/about",
+const SplatRoute = SplatRouteImport.update({
+  id: "/$",
+  path: "/$",
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,40 +23,49 @@ const IndexRoute = IndexRouteImport.update({
   path: "/",
   getParentRoute: () => rootRouteImport,
 } as any)
+const SSecretKeyRoute = SSecretKeyRouteImport.update({
+  id: "/s/$secretKey",
+  path: "/s/$secretKey",
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute
-  "/about": typeof AboutRoute
+  "/$": typeof SplatRoute
+  "/s/$secretKey": typeof SSecretKeyRoute
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute
-  "/about": typeof AboutRoute
+  "/$": typeof SplatRoute
+  "/s/$secretKey": typeof SSecretKeyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   "/": typeof IndexRoute
-  "/about": typeof AboutRoute
+  "/$": typeof SplatRoute
+  "/s/$secretKey": typeof SSecretKeyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/" | "/about"
+  fullPaths: "/" | "/$" | "/s/$secretKey"
   fileRoutesByTo: FileRoutesByTo
-  to: "/" | "/about"
-  id: "__root__" | "/" | "/about"
+  to: "/" | "/$" | "/s/$secretKey"
+  id: "__root__" | "/" | "/$" | "/s/$secretKey"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
+  SplatRoute: typeof SplatRoute
+  SSecretKeyRoute: typeof SSecretKeyRoute
 }
 
 declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    "/about": {
-      id: "/about"
-      path: "/about"
-      fullPath: "/about"
-      preLoaderRoute: typeof AboutRouteImport
+    "/$": {
+      id: "/$"
+      path: "/$"
+      fullPath: "/$"
+      preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     "/": {
@@ -65,12 +75,20 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    "/s/$secretKey": {
+      id: "/s/$secretKey"
+      path: "/s/$secretKey"
+      fullPath: "/s/$secretKey"
+      preLoaderRoute: typeof SSecretKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
+  SplatRoute: SplatRoute,
+  SSecretKeyRoute: SSecretKeyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
