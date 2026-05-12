@@ -72,12 +72,21 @@ export function Shhhare({ storedSecret, onSetStoredSecret }: ShhhareProps) {
                 <Label>
                     <Num>OK</Num>Your secret is ready
                 </Label>
-                <p className="mt-2 text-[13px] text-muted-foreground">Copy the link below and share it. The key never reaches the server.</p>
+                <p className="mt-2 text-[13px] text-muted-foreground">
+                    Copy the link below and share it. The key never reaches the server.
+                </p>
             </div>
 
             <div className="pt-4 pb-2 flex flex-col gap-4">
                 {items.map((it) => (
-                    <Copy key={it.id} label={it.label} value={it.value} display={it.display} icon={it.icon} hint={it.hint} />
+                    <Copy
+                        key={it.id}
+                        label={it.label}
+                        value={it.value}
+                        display={it.display}
+                        icon={it.icon}
+                        hint={it.hint}
+                    />
                 ))}
             </div>
 

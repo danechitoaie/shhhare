@@ -189,7 +189,9 @@ export function Encrypt({ onSetStoredSecret }: EncryptProps) {
             <div className="pt-6 pb-6">
                 <Label htmlFor="file">
                     <Num>02</Num>Attachments
-                    <span className="ml-auto font-mono text-xs text-muted-foreground">(optional · drag &amp; drop)</span>
+                    <span className="ml-auto font-mono text-xs text-muted-foreground">
+                        (optional · drag &amp; drop)
+                    </span>
                 </Label>
                 <div
                     className={
@@ -206,12 +208,17 @@ export function Encrypt({ onSetStoredSecret }: EncryptProps) {
                     {files.length > 0 ? (
                         <div className="flex flex-col gap-1.5">
                             {files.map((f, i) => (
-                                <div key={i} className="flex items-center gap-2 px-2 py-1.5 rounded-sm bg-background border text-[13px]">
+                                <div
+                                    key={i}
+                                    className="flex items-center gap-2 px-2 py-1.5 rounded-sm bg-background border text-[13px]"
+                                >
                                     <FileIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                                     <span className="font-mono truncate flex-1" title={f.name}>
                                         {f.name}
                                     </span>
-                                    <span className="font-mono text-xs text-muted-foreground shrink-0">{fmtBytes(f.size)}</span>
+                                    <span className="font-mono text-xs text-muted-foreground shrink-0">
+                                        {fmtBytes(f.size)}
+                                    </span>
                                     <button
                                         type="button"
                                         onClick={() => removeFile(i)}
@@ -256,7 +263,11 @@ export function Encrypt({ onSetStoredSecret }: EncryptProps) {
                     <Label id="expiration-label">
                         <Num>03</Num>Expires after
                     </Label>
-                    <div role="tablist" aria-labelledby="expiration-label" className="mt-2 p-0.75 relative inline-flex items-center w-full bg-muted rounded-md">
+                    <div
+                        role="tablist"
+                        aria-labelledby="expiration-label"
+                        className="mt-2 p-0.75 relative inline-flex items-center w-full bg-muted rounded-md"
+                    >
                         <span
                             aria-hidden="true"
                             className="absolute top-0.75 bottom-0.75 left-0.75 rounded-[6px] bg-background shadow-xs transition-transform duration-200 ease-out"
@@ -297,7 +308,11 @@ export function Encrypt({ onSetStoredSecret }: EncryptProps) {
                     <Label id="access-label">
                         <Num>04</Num>Access
                     </Label>
-                    <div role="tablist" aria-labelledby="access-label" className="mt-2 p-0.75 relative inline-flex items-center w-full bg-muted rounded-md">
+                    <div
+                        role="tablist"
+                        aria-labelledby="access-label"
+                        className="mt-2 p-0.75 relative inline-flex items-center w-full bg-muted rounded-md"
+                    >
                         <span
                             aria-hidden="true"
                             className="absolute top-0.75 bottom-0.75 left-0.75 rounded-[6px] bg-background shadow-xs transition-transform duration-200 ease-out"
@@ -333,19 +348,32 @@ export function Encrypt({ onSetStoredSecret }: EncryptProps) {
                 <div className="flex items-center justify-between text-[13px]">
                     <span className="text-muted-foreground">
                         Payload
-                        <span className="ml-2 text-[11px] text-muted-foreground/80">(size of the data after encryption)</span>
+                        <span className="ml-2 text-[11px] text-muted-foreground/80">
+                            (size of the data after encryption)
+                        </span>
                     </span>
                     <span className={"font-mono " + (over ? "text-destructive" : "text-foreground")}>
                         {fmtBytes(totalBytes)} <span className="text-muted-foreground">/ {fmtBytes(maxBytes)}</span>
                     </span>
                 </div>
-                <div className={"mt-2 h-1.5 w-full rounded-full overflow-hidden " + (over ? "bg-destructive/20" : "bg-muted")}>
+                <div
+                    className={
+                        "mt-2 h-1.5 w-full rounded-full overflow-hidden " + (over ? "bg-destructive/20" : "bg-muted")
+                    }
+                >
                     <div
-                        className={"h-full transition-[width] duration-200 ease-out " + (over ? "bg-destructive" : "bg-foreground")}
+                        className={
+                            "h-full transition-[width] duration-200 ease-out " +
+                            (over ? "bg-destructive" : "bg-foreground")
+                        }
                         style={{ width: `${percentage}%` }}
                     />
                 </div>
-                {over && <div className="mt-1.5 text-[12px] text-destructive font-mono">over by {fmtBytes(totalBytes - maxBytes)}</div>}
+                {over && (
+                    <div className="mt-1.5 text-[12px] text-destructive font-mono">
+                        over by {fmtBytes(totalBytes - maxBytes)}
+                    </div>
+                )}
             </div>
 
             <div className="flex items-center justify-between gap-3 py-4 px-12 mt-6 -mx-12 -mb-8 border-t border-border bg-[color-mix(in_oklab,var(--muted)_60%,transparent)] text-[13px] rounded-b-lg">
@@ -354,8 +382,19 @@ export function Encrypt({ onSetStoredSecret }: EncryptProps) {
                     <span>AES-256-GCM end-to-end encryption. Key in URL fragment.</span>
                 </span>
 
-                <Button type="button" size="lg" className="cursor-pointer px-6" disabled={encrypting || submitting || !payload || over} onClick={onSubmit}>
-                    {encrypting || submitting ? <Loader2Icon className="w-3.5 h-3.5 animate-spin" /> : <SendIcon className="w-3.5 h-3.5" />} Shhhare it!
+                <Button
+                    type="button"
+                    size="lg"
+                    className="cursor-pointer px-6"
+                    disabled={encrypting || submitting || !payload || over}
+                    onClick={onSubmit}
+                >
+                    {encrypting || submitting ? (
+                        <Loader2Icon className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                        <SendIcon className="w-3.5 h-3.5" />
+                    )}{" "}
+                    Shhhare it!
                 </Button>
             </div>
         </>

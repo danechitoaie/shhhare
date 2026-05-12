@@ -13,7 +13,11 @@ function Index() {
     return (
         <div className="px-4">
             <div className="my-10 px-12 py-8 max-w-lg lg:max-w-4xl mx-auto bg-background rounded-lg shadow-md border">
-                {storedSecret ? <Shhhare storedSecret={storedSecret} onSetStoredSecret={setStoredSecret} /> : <Encrypt onSetStoredSecret={setStoredSecret} />}
+                {storedSecret ? (
+                    <Shhhare storedSecret={storedSecret} onSetStoredSecret={setStoredSecret} />
+                ) : (
+                    <Encrypt onSetStoredSecret={setStoredSecret} />
+                )}
             </div>
         </div>
     );
