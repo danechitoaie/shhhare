@@ -1,9 +1,9 @@
-import { bytesToBase64Url, base64UrlToBytes } from "@/lib/base64";
+import bs58 from "bs58";
 
-export interface EncryptResult {
+export type EncryptResult = {
     val: string;
     key: string;
-}
+};
 
 export async function encrypt(plaintext: string): Promise<EncryptResult> {
     const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
@@ -16,16 +16,16 @@ export async function encrypt(plaintext: string): Promise<EncryptResult> {
     secret.set(iv, rawKey.byteLength);
 
     return {
-        val: bytesToBase64Url(new Uint8Array(ciphertext)),
-        key: bytesToBase64Url(secret),
+        val: bs58.encode(new Uint8Array(ciphertext)),
+        key: bs58.encode(secret),
     };
 }
 
 export async function decrypt(ciphertext: string, secret: string): Promise<string> {
-    const secretBytes = base64UrlToBytes(secret);
+    const secretBytes = bs58.decode(secret);
     const rawKey = secretBytes.slice(0, 32);
     const iv = secretBytes.slice(32);
     const key = await crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, ["decrypt"]);
-    const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, base64UrlToBytes(ciphertext).buffer as ArrayBuffer);
+    const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, bs58.decode(ciphertext).buffer as ArrayBuffer);
     return new TextDecoder().decode(plaintext);
 }

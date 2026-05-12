@@ -12,9 +12,9 @@ function isCryptoSupported(): boolean {
     );
 }
 
-interface CryptoGuardProps {
+type CryptoGuardProps = {
     children: ReactNode;
-}
+};
 
 export function CryptoGuard({ children }: CryptoGuardProps) {
     if (isCryptoSupported()) {
