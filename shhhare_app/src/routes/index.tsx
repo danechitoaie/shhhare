@@ -25,10 +25,10 @@ function Index() {
     const [payload, setPayload] = useState<EncryptResult | null>(null);
     const [encrypting, setEncrypting] = useState<boolean>(false);
 
-    const MAX_BYTES = APP_DATA.b;
+    const maxBytes = APP_DATA.b;
     const totalBytes = payload?.ciphertext.length ?? 0;
-    const over = totalBytes > MAX_BYTES;
-    const pct = Math.min(100, (totalBytes / MAX_BYTES) * 100);
+    const over = totalBytes > maxBytes;
+    const percentage = Math.min(100, (totalBytes / maxBytes) * 100);
 
     useEffect(() => {
         if (text === "" && files.length === 0) {
@@ -44,8 +44,8 @@ function Index() {
                 const f = await Promise.all(
                     files.map(async (file) => ({
                         n: file.name,
+                        t: file.type,
                         c: await fileToBase64(file),
-                        s: file.size,
                     })),
                 );
 
@@ -278,16 +278,16 @@ function Index() {
                             <span className="ml-2 text-[11px] text-muted-foreground/80">(size of the data after encryption)</span>
                         </span>
                         <span className={"font-mono " + (over ? "text-destructive" : "text-foreground")}>
-                            {fmtBytes(totalBytes)} <span className="text-muted-foreground">/ {fmtBytes(MAX_BYTES)}</span>
+                            {fmtBytes(totalBytes)} <span className="text-muted-foreground">/ {fmtBytes(maxBytes)}</span>
                         </span>
                     </div>
                     <div className={"mt-2 h-1.5 w-full rounded-full overflow-hidden " + (over ? "bg-destructive/20" : "bg-muted")}>
                         <div
                             className={"h-full transition-[width] duration-200 ease-out " + (over ? "bg-destructive" : "bg-foreground")}
-                            style={{ width: `${pct}%` }}
+                            style={{ width: `${percentage}%` }}
                         />
                     </div>
-                    {over && <div className="mt-1.5 text-[12px] text-destructive font-mono">over by {fmtBytes(totalBytes - MAX_BYTES)}</div>}
+                    {over && <div className="mt-1.5 text-[12px] text-destructive font-mono">over by {fmtBytes(totalBytes - maxBytes)}</div>}
                 </div>
 
                 <div className="flex items-center justify-between gap-3 py-4 px-12 mt-6 -mx-12 -mb-8 border-t border-border bg-[color-mix(in_oklab,var(--muted)_60%,transparent)] text-[13px] rounded-b-lg">
