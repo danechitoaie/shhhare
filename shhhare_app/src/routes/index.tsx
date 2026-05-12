@@ -115,12 +115,11 @@ function Index() {
 
         setSubmitting(true);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-            // const res = await fetch("/api/secret", {
-            //     method: "POST",
-            //     headers: { "Content-Type": "application/json" },
-            //     body: JSON.stringify({ v: payload.v, t: ttl, b: bar }),
-            // });
+            const res = await fetch("/api/secret", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ v: payload.v, t: ttl, b: bar }),
+            });
 
             // if (!res.ok) {
             //     throw new Error(`Request failed: ${res.status}`);
@@ -327,7 +326,7 @@ function Index() {
                         <span>AES-256-GCM end-to-end encryption · key in URL fragment</span>
                     </span>
 
-                    <Button type="button" size="lg" className="cursor-pointer px-6" disabled={encrypting || submitting || over || !payload} onClick={onSubmit}>
+                    <Button type="button" size="lg" className="cursor-pointer px-6" disabled={encrypting || submitting || !payload || over} onClick={onSubmit}>
                         {encrypting || submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />} Shhhare it!
                     </Button>
                 </div>
