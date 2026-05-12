@@ -13,7 +13,7 @@ pub struct Config {
     #[clap(long, env)]
     pub redis_url: String,
 
-    #[clap(long, env)]
+    #[clap(long, env, default_value = "256KB")]
     /// Case-insensitive with KB/MB/GB treated as decimal (1000-based) and KiB/MiB/GiB as binary (1024-based), per IEC convention
     pub max_size: ByteSize,
 }

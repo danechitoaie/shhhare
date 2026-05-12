@@ -20,9 +20,9 @@ impl SecretTTL {
 
 #[derive(Object)]
 pub struct AddSecretRequest {
-    pub v: String,
-    pub t: SecretTTL,
-    pub b: bool,
+    pub val: String,
+    pub ttl: SecretTTL,
+    pub bar: bool,
 }
 
 #[derive(Object)]
