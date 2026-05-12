@@ -57,7 +57,7 @@ export function Copy({ label, copy, qr, display, icon, hint }: CopyProps) {
                             className="inline-flex items-center justify-center gap-1.5 px-3 rounded-md border bg-background text-[13px] text-foreground hover:bg-muted cursor-pointer shrink-0"
                         >
                             <QrCodeIcon className="w-3.5 h-3.5" />
-                            <span>Show QR</span>
+                            <span>QR</span>
                         </button>
                     </DialogTrigger>
                     <DialogContent>

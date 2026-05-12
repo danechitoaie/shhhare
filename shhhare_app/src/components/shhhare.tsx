@@ -17,7 +17,7 @@ export function Shhhare({ storedSecret, onSetStoredSecret }: ShhhareProps) {
     const host = protoMatch?.[2] ?? origin;
 
     const oneClickLinkValueCopy = `${origin}/s/${storedSecret.secretKey}#k=${storedSecret.decryptionKey}`;
-    const oneClickLinkValueQr = `One-click link\n${oneClickLinkValueCopy}`;
+    const oneClickLinkValueQr = `🔗 ${oneClickLinkValueCopy}`;
     const oneClickLinkDisplay = (
         <>
             <span className="text-muted-foreground">{proto}</span>
@@ -26,7 +26,7 @@ export function Shhhare({ storedSecret, onSetStoredSecret }: ShhhareProps) {
     );
 
     const shortLinkValueCopy = `${origin}/s/${storedSecret.secretKey}`;
-    const shortLinkValueQr = `Short link\n${shortLinkValueCopy}`;
+    const shortLinkValueQr = `🔗 ${shortLinkValueCopy}`;
     const shortLinkDisplay = (
         <>
             <span className="text-muted-foreground">{proto}</span>
@@ -35,7 +35,7 @@ export function Shhhare({ storedSecret, onSetStoredSecret }: ShhhareProps) {
     );
 
     const decryptionKeyValueCopy = storedSecret.decryptionKey;
-    const decryptionKeyValueQr = `Decryption key\n${decryptionKeyValueCopy}`;
+    const decryptionKeyValueQr = `🔑 ${decryptionKeyValueCopy}`;
     const decryptionKeyDisplay = (
         <>
             <span className="font-bold">{storedSecret.decryptionKey}</span>

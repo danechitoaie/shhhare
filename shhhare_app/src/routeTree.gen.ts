@@ -11,7 +11,7 @@
 import { Route as rootRouteImport } from "./routes/__root"
 import { Route as SplatRouteImport } from "./routes/$"
 import { Route as IndexRouteImport } from "./routes/index"
-import { Route as SSecretKeyRouteImport } from "./routes/s.$secretKey"
+import { Route as SKeyRouteImport } from "./routes/s.$key"
 
 const SplatRoute = SplatRouteImport.update({
   id: "/$",
@@ -23,40 +23,40 @@ const IndexRoute = IndexRouteImport.update({
   path: "/",
   getParentRoute: () => rootRouteImport,
 } as any)
-const SSecretKeyRoute = SSecretKeyRouteImport.update({
-  id: "/s/$secretKey",
-  path: "/s/$secretKey",
+const SKeyRoute = SKeyRouteImport.update({
+  id: "/s/$key",
+  path: "/s/$key",
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute
   "/$": typeof SplatRoute
-  "/s/$secretKey": typeof SSecretKeyRoute
+  "/s/$key": typeof SKeyRoute
 }
 export interface FileRoutesByTo {
   "/": typeof IndexRoute
   "/$": typeof SplatRoute
-  "/s/$secretKey": typeof SSecretKeyRoute
+  "/s/$key": typeof SKeyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   "/": typeof IndexRoute
   "/$": typeof SplatRoute
-  "/s/$secretKey": typeof SSecretKeyRoute
+  "/s/$key": typeof SKeyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: "/" | "/$" | "/s/$secretKey"
+  fullPaths: "/" | "/$" | "/s/$key"
   fileRoutesByTo: FileRoutesByTo
-  to: "/" | "/$" | "/s/$secretKey"
-  id: "__root__" | "/" | "/$" | "/s/$secretKey"
+  to: "/" | "/$" | "/s/$key"
+  id: "__root__" | "/" | "/$" | "/s/$key"
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
-  SSecretKeyRoute: typeof SSecretKeyRoute
+  SKeyRoute: typeof SKeyRoute
 }
 
 declare module "@tanstack/react-router" {
@@ -75,11 +75,11 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    "/s/$secretKey": {
-      id: "/s/$secretKey"
-      path: "/s/$secretKey"
-      fullPath: "/s/$secretKey"
-      preLoaderRoute: typeof SSecretKeyRouteImport
+    "/s/$key": {
+      id: "/s/$key"
+      path: "/s/$key"
+      fullPath: "/s/$key"
+      preLoaderRoute: typeof SKeyRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -88,7 +88,7 @@ declare module "@tanstack/react-router" {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
-  SSecretKeyRoute: SSecretKeyRoute,
+  SKeyRoute: SKeyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
