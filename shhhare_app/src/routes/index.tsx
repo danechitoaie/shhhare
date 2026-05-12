@@ -2,24 +2,24 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import type { DragEvent, ChangeEvent } from "react";
 import {
-    Flame,
-    Eye,
-    Clock,
-    Calendar,
-    CalendarDays,
-    ShieldCheck,
-    Send,
+    Flame as FlameIcon,
+    Eye as EyeIcon,
+    Clock as ClockIcon,
+    Calendar as CalendarIcon,
+    CalendarDays as CalendarDaysIcon,
+    ShieldCheck as ShieldCheckIcon,
+    Send as SendIcon,
     File as FileIcon,
-    Paperclip,
-    Plus,
-    X,
-    Loader2,
-    Copy,
-    Check,
+    Paperclip as PaperclipIcon,
+    Plus as PlusIcon,
+    X as XIcon,
+    Loader2 as Loader2Icon,
+    Copy as CopyIcon,
+    Check as CheckIcon,
     Link as LinkIcon,
-    Link2,
-    KeyRound,
-    RotateCcw,
+    Link2 as Link2Icon,
+    KeyRound as KeyRoundIcon,
+    RotateCcw as RotateCcwIcon,
 } from "lucide-react";
 import { Num } from "@/components/ui/num";
 import { Textarea } from "@/components/ui/textarea";
@@ -236,14 +236,14 @@ function Index() {
                                                     aria-label="Remove"
                                                     className="inline-flex items-center justify-center w-5 h-5 rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
                                                 >
-                                                    <X className="w-3 h-3" />
+                                                    <XIcon className="w-3 h-3" />
                                                 </button>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2.5 p-1 text-[13px] text-muted-foreground">
-                                        <Paperclip className="w-3.5 h-3.5" />
+                                        <PaperclipIcon className="w-3.5 h-3.5" />
                                         <span>
                                             Drop files here, or{" "}
                                             <button
@@ -262,7 +262,7 @@ function Index() {
                                         onClick={() => fileRef.current?.click()}
                                         className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 rounded-sm text-[13px] text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
                                     >
-                                        <Plus className="w-3.5 h-3.5" /> add more
+                                        <PlusIcon className="w-3.5 h-3.5" /> add more
                                     </button>
                                 )}
                                 <input ref={fileRef} id="file" type="file" multiple className="sr-only" onChange={onPickFiles} />
@@ -293,7 +293,7 @@ function Index() {
                                         className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 hover:text-foreground aria-selected:text-foreground"
                                         onClick={() => setTtl("H")}
                                     >
-                                        <Clock className="w-3.25 h-3.25" />1 hour
+                                        <ClockIcon className="w-3.25 h-3.25" />1 hour
                                     </button>
 
                                     <button
@@ -302,7 +302,7 @@ function Index() {
                                         className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 hover:text-foreground aria-selected:text-foreground"
                                         onClick={() => setTtl("D")}
                                     >
-                                        <Calendar className="w-3.25 h-3.25" />1 day
+                                        <CalendarIcon className="w-3.25 h-3.25" />1 day
                                     </button>
 
                                     <button
@@ -311,7 +311,7 @@ function Index() {
                                         className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 hover:text-foreground aria-selected:text-foreground"
                                         onClick={() => setTtl("W")}
                                     >
-                                        <CalendarDays className="w-3.25 h-3.25" />1 week
+                                        <CalendarDaysIcon className="w-3.25 h-3.25" />1 week
                                     </button>
                                 </div>
                             </div>
@@ -338,7 +338,7 @@ function Index() {
                                         className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 hover:text-foreground aria-selected:text-foreground"
                                         onClick={() => setBar(true)}
                                     >
-                                        <Flame className="w-3.25 h-3.25" />
+                                        <FlameIcon className="w-3.25 h-3.25" />
                                         Burn after read
                                     </button>
 
@@ -348,7 +348,7 @@ function Index() {
                                         className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 hover:text-foreground aria-selected:text-foreground"
                                         onClick={() => setBar(false)}
                                     >
-                                        <Eye className="w-3.25 h-3.25" />
+                                        <EyeIcon className="w-3.25 h-3.25" />
                                         Multiple reads
                                     </button>
                                 </div>
@@ -376,7 +376,7 @@ function Index() {
 
                         <div className="flex items-center justify-between gap-3 py-4 px-12 mt-6 -mx-12 -mb-8 border-t border-border bg-[color-mix(in_oklab,var(--muted)_60%,transparent)] text-[13px] rounded-b-lg">
                             <span className="inline-flex items-center gap-2 text-muted-foreground">
-                                <ShieldCheck className="w-3.5 h-3.5" />
+                                <ShieldCheckIcon className="w-3.5 h-3.5" />
                                 <span>AES-256-GCM end-to-end encryption. Key in URL fragment.</span>
                             </span>
 
@@ -387,7 +387,7 @@ function Index() {
                                 disabled={encrypting || submitting || !payload || over}
                                 onClick={onSubmit}
                             >
-                                {encrypting || submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />} Shhhare it!
+                                {encrypting || submitting ? <Loader2Icon className="w-3.5 h-3.5 animate-spin" /> : <SendIcon className="w-3.5 h-3.5" />} Shhhare it!
                             </Button>
                         </div>
                     </>
@@ -445,7 +445,7 @@ function StoredSecret({ secret, onReset }: StoredSecretProps) {
             label: "Short link",
             value: shortLink,
             display: shortLinkDisplay,
-            icon: Link2,
+            icon: Link2Icon,
             hint: "Share separately from the key for extra safety",
         },
         {
@@ -453,7 +453,7 @@ function StoredSecret({ secret, onReset }: StoredSecretProps) {
             label: "Decryption key",
             value: secret.decryptionKey,
             display: decryptionKeyDisplay,
-            icon: KeyRound,
+            icon: KeyRoundIcon,
             hint: "Send through a different channel than the short link",
         },
     ];
@@ -475,11 +475,11 @@ function StoredSecret({ secret, onReset }: StoredSecretProps) {
 
             <div className="flex items-center justify-between gap-3 py-4 px-12 mt-6 -mx-12 -mb-8 border-t border-border bg-[color-mix(in_oklab,var(--muted)_60%,transparent)] text-[13px] rounded-b-lg">
                 <span className="inline-flex items-center gap-2 text-muted-foreground">
-                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <ShieldCheckIcon className="w-3.5 h-3.5" />
                     <span>We can&rsquo;t recover this key. Save it before leaving.</span>
                 </span>
                 <Button type="button" size="lg" className="cursor-pointer px-6" onClick={onReset}>
-                    <RotateCcw className="w-3.5 h-3.5" /> Shhhare another!
+                    <RotateCcwIcon className="w-3.5 h-3.5" /> Shhhare another!
                 </Button>
             </div>
         </>
@@ -523,7 +523,7 @@ function CopyField({ label, value, display, icon: Icon, hint }: CopyFieldProps) 
                     aria-label={`Copy ${label}`}
                     className="inline-flex items-center justify-center gap-1.5 px-3 rounded-md border bg-background text-[13px] text-foreground hover:bg-muted cursor-pointer shrink-0"
                 >
-                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied ? <CheckIcon className="w-3.5 h-3.5" /> : <CopyIcon className="w-3.5 h-3.5" />}
                     <span>Copy</span>
                 </button>
             </div>
