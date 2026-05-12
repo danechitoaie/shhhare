@@ -16,7 +16,8 @@ export function Shhhare({ storedSecret, onSetStoredSecret }: ShhhareProps) {
     const proto = protoMatch?.[1] ?? "";
     const host = protoMatch?.[2] ?? origin;
 
-    const oneClickLinkValue = `${origin}/s/${storedSecret.secretKey}#k=${storedSecret.decryptionKey}`;
+    const oneClickLinkValueCopy = `${origin}/s/${storedSecret.secretKey}#k=${storedSecret.decryptionKey}`;
+    const oneClickLinkValueQr = `One-click link\n${oneClickLinkValueCopy}`;
     const oneClickLinkDisplay = (
         <>
             <span className="text-muted-foreground">{proto}</span>
@@ -24,7 +25,8 @@ export function Shhhare({ storedSecret, onSetStoredSecret }: ShhhareProps) {
         </>
     );
 
-    const shortLinkValue = `${origin}/s/${storedSecret.secretKey}`;
+    const shortLinkValueCopy = `${origin}/s/${storedSecret.secretKey}`;
+    const shortLinkValueQr = `Short link\n${shortLinkValueCopy}`;
     const shortLinkDisplay = (
         <>
             <span className="text-muted-foreground">{proto}</span>
@@ -32,18 +34,28 @@ export function Shhhare({ storedSecret, onSetStoredSecret }: ShhhareProps) {
         </>
     );
 
-    const decryptionKeyValue = storedSecret.decryptionKey;
+    const decryptionKeyValueCopy = storedSecret.decryptionKey;
+    const decryptionKeyValueQr = `Decryption key\n${decryptionKeyValueCopy}`;
     const decryptionKeyDisplay = (
         <>
             <span className="font-bold">{storedSecret.decryptionKey}</span>
         </>
     );
 
-    const items: { id: string; label: string; value: string; display: ReactNode; icon: ReactNode; hint: string }[] = [
+    const items: {
+        id: string;
+        label: string;
+        copy: string;
+        qr: string;
+        display: ReactNode;
+        icon: ReactNode;
+        hint: string;
+    }[] = [
         {
             id: "one-click-link",
             label: "One-click link",
-            value: oneClickLinkValue,
+            copy: oneClickLinkValueCopy,
+            qr: oneClickLinkValueQr,
             display: oneClickLinkDisplay,
             icon: <LinkIcon className="w-3.5 h-3.5" />,
             hint: "Opens and decrypts in one step (key in URL fragment)",
@@ -51,7 +63,8 @@ export function Shhhare({ storedSecret, onSetStoredSecret }: ShhhareProps) {
         {
             id: "short-link",
             label: "Short link",
-            value: shortLinkValue,
+            copy: shortLinkValueCopy,
+            qr: shortLinkValueQr,
             display: shortLinkDisplay,
             icon: <Link2Icon className="w-3.5 h-3.5" />,
             hint: "Share separately from the key for extra safety",
@@ -59,7 +72,8 @@ export function Shhhare({ storedSecret, onSetStoredSecret }: ShhhareProps) {
         {
             id: "decryption-key",
             label: "Decryption key",
-            value: decryptionKeyValue,
+            copy: decryptionKeyValueCopy,
+            qr: decryptionKeyValueQr,
             display: decryptionKeyDisplay,
             icon: <KeyRoundIcon className="w-3.5 h-3.5" />,
             hint: "Send through a different channel than the short link",
@@ -82,7 +96,8 @@ export function Shhhare({ storedSecret, onSetStoredSecret }: ShhhareProps) {
                     <Copy
                         key={it.id}
                         label={it.label}
-                        value={it.value}
+                        copy={it.copy}
+                        qr={it.qr}
                         display={it.display}
                         icon={it.icon}
                         hint={it.hint}
