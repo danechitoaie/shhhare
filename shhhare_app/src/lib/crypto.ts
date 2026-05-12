@@ -1,8 +1,8 @@
 import { bytesToBase64Url, base64UrlToBytes } from "@/lib/base64";
 
 export interface EncryptResult {
-    secret: string;
-    ciphertext: string;
+    v: string;
+    k: string;
 }
 
 export async function encrypt(plaintext: string): Promise<EncryptResult> {
@@ -16,8 +16,8 @@ export async function encrypt(plaintext: string): Promise<EncryptResult> {
     secret.set(iv, rawKey.byteLength);
 
     return {
-        ciphertext: bytesToBase64Url(new Uint8Array(ciphertext)),
-        secret: bytesToBase64Url(secret),
+        v: bytesToBase64Url(new Uint8Array(ciphertext)),
+        k: bytesToBase64Url(secret),
     };
 }
 

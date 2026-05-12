@@ -3,26 +3,26 @@ use poem_openapi::{ApiResponse, Enum, Object};
 
 #[derive(Enum)]
 pub enum SecretTTL {
-    HOUR,
-    DAY,
-    WEEK,
+    H,
+    D,
+    W,
 }
 
 impl SecretTTL {
     pub fn as_seconds(&self) -> u64 {
         match self {
-            SecretTTL::HOUR => 60 * 60,
-            SecretTTL::DAY => 60 * 60 * 24,
-            SecretTTL::WEEK => 60 * 60 * 24 * 7,
+            SecretTTL::H => 60 * 60,
+            SecretTTL::D => 60 * 60 * 24,
+            SecretTTL::W => 60 * 60 * 24 * 7,
         }
     }
 }
 
 #[derive(Object)]
 pub struct AddSecretRequest {
-    pub val: String,
-    pub ttl: SecretTTL,
-    pub bar: bool,
+    pub v: String,
+    pub t: SecretTTL,
+    pub b: bool,
 }
 
 #[derive(Object)]

@@ -20,13 +20,14 @@ function Index() {
     const [dragging, setDragging] = useState<boolean>(false);
     const [files, setFiles] = useState<File[]>([]);
     const fileRef = useRef<HTMLInputElement>(null);
-    const [ttl, setTtl] = useState<"HOUR" | "DAY" | "WEEK">("HOUR");
+    const [ttl, setTtl] = useState<"H" | "D" | "W">("H");
     const [bar, setBar] = useState<boolean>(true);
     const [payload, setPayload] = useState<EncryptResult | null>(null);
     const [encrypting, setEncrypting] = useState<boolean>(false);
+    const [submitting, setSubmitting] = useState<boolean>(false);
 
     const maxBytes = APP_DATA.b;
-    const totalBytes = payload?.ciphertext.length ?? 0;
+    const totalBytes = payload?.v.length ?? 0;
     const over = totalBytes > maxBytes;
     const percentage = Math.min(100, (totalBytes / maxBytes) * 100);
 
@@ -105,6 +106,36 @@ function Index() {
 
     const removeFile = (i: number) => {
         setFiles((prev) => prev.filter((_, idx) => idx !== i));
+    };
+
+    const onSubmit = async () => {
+        if (!payload || submitting) {
+            return;
+        }
+
+        setSubmitting(true);
+        try {
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            // const res = await fetch("/api/secret", {
+            //     method: "POST",
+            //     headers: { "Content-Type": "application/json" },
+            //     body: JSON.stringify({ v: payload.v, t: ttl, b: bar }),
+            // });
+
+            // if (!res.ok) {
+            //     throw new Error(`Request failed: ${res.status}`);
+            // }
+
+            // const data = await res.json();
+            // console.log(data);
+
+            setText("");
+            setFiles([]);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -204,32 +235,32 @@ function Index() {
                                 className="absolute top-0.75 bottom-0.75 left-0.75 rounded-[6px] bg-background shadow-xs transition-transform duration-200 ease-out"
                                 style={{
                                     width: "calc((100% - 0.375rem) / 3)",
-                                    transform: `translateX(${ttl === "HOUR" ? 0 : ttl === "DAY" ? 100 : 200}%)`,
+                                    transform: `translateX(${ttl === "H" ? 0 : ttl === "D" ? 100 : 200}%)`,
                                 }}
                             />
                             <button
                                 role="tab"
-                                aria-selected={ttl === "HOUR"}
+                                aria-selected={ttl === "H"}
                                 className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 hover:text-foreground aria-selected:text-foreground"
-                                onClick={() => setTtl("HOUR")}
+                                onClick={() => setTtl("H")}
                             >
                                 <Clock className="w-3.25 h-3.25" />1 hour
                             </button>
 
                             <button
                                 role="tab"
-                                aria-selected={ttl === "DAY"}
+                                aria-selected={ttl === "D"}
                                 className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 hover:text-foreground aria-selected:text-foreground"
-                                onClick={() => setTtl("DAY")}
+                                onClick={() => setTtl("D")}
                             >
                                 <Calendar className="w-3.25 h-3.25" />1 day
                             </button>
 
                             <button
                                 role="tab"
-                                aria-selected={ttl === "WEEK"}
+                                aria-selected={ttl === "W"}
                                 className="flex-1 h-8 border-0 bg-transparent text-muted-foreground text-[13px] font-medium rounded-[6px] cursor-pointer z-1 inline-flex items-center justify-center gap-1.5 transition-colors duration-150 hover:text-foreground aria-selected:text-foreground"
-                                onClick={() => setTtl("WEEK")}
+                                onClick={() => setTtl("W")}
                             >
                                 <CalendarDays className="w-3.25 h-3.25" />1 week
                             </button>
@@ -296,8 +327,8 @@ function Index() {
                         <span>AES-256-GCM end-to-end encryption · key in URL fragment</span>
                     </span>
 
-                    <Button type="button" size="lg" className="cursor-pointer px-6" disabled={encrypting || over || !payload}>
-                        {encrypting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />} Shhhare it!
+                    <Button type="button" size="lg" className="cursor-pointer px-6" disabled={encrypting || submitting || over || !payload} onClick={onSubmit}>
+                        {encrypting || submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />} Shhhare it!
                     </Button>
                 </div>
             </div>

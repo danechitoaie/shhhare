@@ -22,7 +22,7 @@ impl SecretApi {
         Data(connection_manager): Data<&ConnectionManager>,
         Json(body): Json<AddSecretRequest>,
     ) -> AddSecretResponse {
-        if body.val.len() as u64 > config.max_size.as_u64() {
+        if body.v.len() as u64 > config.max_size.as_u64() {
             let details = format!("Secret exceeds maximum size of {}", config.max_size);
             return AddSecretResponse::bad_request(details);
         }
@@ -35,8 +35,8 @@ impl SecretApi {
         }
 
         let key = bs58::encode(bytes).into_string();
-        let val = format!("{}|{}", if body.bar { "1" } else { "0" }, body.val);
-        let ttl = body.ttl.as_seconds();
+        let val = format!("{}|{}", if body.b { "1" } else { "0" }, body.v);
+        let ttl = body.t.as_seconds();
         let opt = redis::SetOptions::default()
             .conditional_set(redis::ExistenceCheck::NX)
             .with_expiration(redis::SetExpiry::EX(ttl));
