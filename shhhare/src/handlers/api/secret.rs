@@ -10,6 +10,7 @@ use crate::models::api::ApiTags;
 use crate::models::api::secret::AddSecretRequest;
 use crate::models::api::secret::AddSecretResponse;
 use crate::models::api::secret::GetSecretResponse;
+use crate::models::api::secret::GetStatusResponse;
 
 pub struct SecretApi;
 
@@ -63,6 +64,38 @@ impl SecretApi {
     }
 
     #[oai(path = "/secret/:key", method = "get", tag = ApiTags::Secret)]
+    async fn get_status(
+        &self,
+        Data(connection_manager): Data<&ConnectionManager>,
+        Path(key): Path<String>,
+    ) -> GetStatusResponse {
+        let mut connection_manager = connection_manager.clone();
+        let res = match redis::pipe()
+            .get(&key)
+            .ttl(&key)
+            .query_async::<(Option<String>, i64)>(&mut connection_manager)
+            .await
+        {
+            Ok(res) => res,
+            Err(err) => {
+                tracing::error!("{:?}", err);
+                let details = "Failed to get the secret!";
+                return GetStatusResponse::internal_server_error(details);
+            }
+        };
+
+        let (ttl, bar) = match res {
+            (Some(raw), ttl) => (ttl, raw.starts_with("1|")),
+            (None, _) => {
+                let details = "Secret not found!";
+                return GetStatusResponse::not_found(details);
+            }
+        };
+
+        GetStatusResponse::ok(ttl, bar)
+    }
+
+    #[oai(path = "/secret/:key", method = "post", tag = ApiTags::Secret)]
     async fn get_secret(
         &self,
         Data(connection_manager): Data<&ConnectionManager>,
