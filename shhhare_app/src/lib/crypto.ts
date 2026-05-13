@@ -1,4 +1,5 @@
 import bs58 from "bs58";
+import { bytesToBase64, base64ToBytes } from "./base64";
 
 export type EncryptResult = {
     val: string;
@@ -16,7 +17,7 @@ export async function encrypt(plaintext: string): Promise<EncryptResult> {
     secret.set(iv, rawKey.byteLength);
 
     return {
-        val: bs58.encode(new Uint8Array(ciphertext)),
+        val: bytesToBase64(new Uint8Array(ciphertext)),
         key: bs58.encode(secret),
     };
 }
@@ -25,7 +26,8 @@ export async function decrypt(ciphertext: string, secret: string): Promise<strin
     const secretBytes = bs58.decode(secret);
     const rawKey = secretBytes.slice(0, 32);
     const iv = secretBytes.slice(32);
+    const data = base64ToBytes(ciphertext).buffer as ArrayBuffer;
     const key = await crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, ["decrypt"]);
-    const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, bs58.decode(ciphertext).buffer as ArrayBuffer);
+    const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, data);
     return new TextDecoder().decode(plaintext);
 }
