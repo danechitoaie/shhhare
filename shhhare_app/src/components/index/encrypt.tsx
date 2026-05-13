@@ -114,14 +114,14 @@ export function EncryptPanel({ onSetStoredSecret }: EncryptPanelProps) {
             return;
         }
 
+        const existingSize = text.length + files.reduce((sum, file) => sum + file.size, 0);
         const incomingSize = arr.reduce((sum, file) => sum + file.size, 0);
-        const existingSize = files.reduce((sum, file) => sum + file.size, 0);
-        const totalSize = incomingSize + existingSize;
+        const totalSize = existingSize + incomingSize;
 
         if (totalSize > maxBytes) {
             showError(
                 "Files too large",
-                "These files exceed the maximum allowed size.",
+                "Adding these files would exceed the maximum allowed size.",
                 `Total size would be ${fmtBytes(totalSize)}, but the limit is ${fmtBytes(maxBytes)}.`,
             );
             return;
