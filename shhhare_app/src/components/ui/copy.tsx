@@ -24,6 +24,8 @@ type CopyProps = {
 
 export function Copy({ label, copy, qr, display, icon, hint }: CopyProps) {
     const [copied, setCopied] = useState(false);
+    const [errorOpen, setErrorOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     const onCopy = async () => {
         try {
@@ -32,6 +34,12 @@ export function Copy({ label, copy, qr, display, icon, hint }: CopyProps) {
             setTimeout(() => setCopied(false), 1500);
         } catch (err) {
             console.error(err);
+            setErrorMessage(
+                err instanceof Error
+                    ? err.message
+                    : "Failed to copy to clipboard.",
+            );
+            setErrorOpen(true);
         }
     };
 
@@ -86,6 +94,20 @@ export function Copy({ label, copy, qr, display, icon, hint }: CopyProps) {
                 </button>
             </div>
             <p className="mt-1.5 text-[12px] text-muted-foreground">{hint}</p>
+            <Dialog open={errorOpen} onOpenChange={setErrorOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Copy failed</DialogTitle>
+                        <DialogDescription>
+                            Unable to copy {label.toLowerCase()} to the clipboard.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <p className="px-3 py-2 rounded-md border bg-muted/30 break-all font-mono text-[12px] text-muted-foreground">
+                        {errorMessage}
+                    </p>
+                    <DialogFooter showCloseButton className="sm:justify-center [&_button]:cursor-pointer" />
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

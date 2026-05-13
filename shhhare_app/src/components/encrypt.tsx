@@ -14,10 +14,18 @@ import {
     XIcon,
     Loader2Icon,
 } from "lucide-react";
-import { Num } from "@/components/ui/num";
+import { Pill } from "@/components/ui/pill";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { fmtBytes } from "@/lib/utils";
 import { fileToBase64 } from "@/lib/base64";
 import { encrypt, type EncryptResult } from "@/lib/crypto";
@@ -37,6 +45,8 @@ export function Encrypt({ onSetStoredSecret }: EncryptProps) {
     const [payload, setPayload] = useState<EncryptResult | null>(null);
     const [encrypting, setEncrypting] = useState<boolean>(false);
     const [submitting, setSubmitting] = useState<boolean>(false);
+    const [errorOpen, setErrorOpen] = useState<boolean>(false);
+    const [errorMessage, setErrorMessage] = useState<string>("");
 
     const maxBytes = APP_DATA.b;
     const totalBytes = payload?.val.length ?? 0;
@@ -126,55 +136,47 @@ export function Encrypt({ onSetStoredSecret }: EncryptProps) {
 
         setSubmitting(true);
 
-        let res;
         try {
-            res = await fetch("/api/secret", {
+            const res = await fetch("/api/secret", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ val: payload.val, ttl, bar }),
             });
+
+            if (!res.ok) {
+                throw new Error("Failed to store the secret!");
+            }
+
+            const obj = (await res.json()) as { key: string };
+            if (!obj.key) {
+                throw new Error("Invalid response from the server!");
+            }
+
+            setText("");
+            setFiles([]);
+            setSubmitting(false);
+
+            onSetStoredSecret({
+                secretKey: obj.key,
+                decryptionKey: payload.key,
+            });
         } catch (err) {
             console.error(err);
+            setErrorMessage(
+                err instanceof Error
+                    ? err.message
+                    : "Failed to store the secret.",
+            );
+            setErrorOpen(true);
             setSubmitting(false);
-            return;
         }
-
-        if (!res.ok) {
-            console.error(new Error("Failed to store the secret!"));
-            setSubmitting(false);
-            return;
-        }
-
-        let obj;
-        try {
-            obj = (await res.json()) as { key: string };
-        } catch (err) {
-            console.error(err);
-            setSubmitting(false);
-            return;
-        }
-
-        if (!obj.key) {
-            console.error(new Error("Invalid response from the server!"));
-            setSubmitting(false);
-            return;
-        }
-
-        setText("");
-        setFiles([]);
-        setSubmitting(false);
-
-        onSetStoredSecret({
-            secretKey: obj.key,
-            decryptionKey: payload.key,
-        });
     };
 
     return (
         <>
             <div className="pt-4 pb-6">
                 <Label htmlFor="secret">
-                    <Num>01</Num>Your secret
+                    <Pill>01</Pill>Your secret
                 </Label>
                 <Textarea
                     id="secret"
@@ -188,7 +190,7 @@ export function Encrypt({ onSetStoredSecret }: EncryptProps) {
 
             <div className="pt-6 pb-6">
                 <Label htmlFor="file">
-                    <Num>02</Num>Attachments
+                    <Pill>02</Pill>Attachments
                     <span className="ml-auto font-mono text-xs text-muted-foreground">
                         (optional · drag &amp; drop)
                     </span>
@@ -261,7 +263,7 @@ export function Encrypt({ onSetStoredSecret }: EncryptProps) {
             <div className="pt-6 pb-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                     <Label id="expiration-label">
-                        <Num>03</Num>Expires after
+                        <Pill>03</Pill>Expires after
                     </Label>
                     <div
                         role="tablist"
@@ -306,7 +308,7 @@ export function Encrypt({ onSetStoredSecret }: EncryptProps) {
                 </div>
                 <div>
                     <Label id="access-label">
-                        <Num>04</Num>Access
+                        <Pill>04</Pill>Access
                     </Label>
                     <div
                         role="tablist"
@@ -397,6 +399,21 @@ export function Encrypt({ onSetStoredSecret }: EncryptProps) {
                     Shhhare it!
                 </Button>
             </div>
+
+            <Dialog open={errorOpen} onOpenChange={setErrorOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Submission failed</DialogTitle>
+                        <DialogDescription>
+                            Unable to store your secret on the server.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <p className="px-3 py-2 rounded-md border bg-muted/30 break-all font-mono text-[12px] text-muted-foreground">
+                        {errorMessage}
+                    </p>
+                    <DialogFooter showCloseButton className="sm:justify-center [&_button]:cursor-pointer" />
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

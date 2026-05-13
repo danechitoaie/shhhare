@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { LinkIcon, Link2Icon, KeyRoundIcon, ShieldCheckIcon, RotateCcwIcon } from "lucide-react";
-import { Num } from "@/components/ui/num";
+import { Pill } from "@/components/ui/pill";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Copy } from "./ui/copy";
@@ -84,7 +84,7 @@ export function Shhhare({ storedSecret, onSetStoredSecret }: ShhhareProps) {
         <>
             <div className="pt-4 pb-2">
                 <Label>
-                    <Num>OK</Num>Your secret is ready
+                    <Pill>OK</Pill>Your secret is ready
                 </Label>
                 <p className="mt-2 text-[13px] text-muted-foreground">
                     Copy the link below and share it. The key never reaches the server.

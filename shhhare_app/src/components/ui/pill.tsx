@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-function Num({ className, ...props }: React.ComponentProps<"span">) {
+function Pill({ className, ...props }: React.ComponentProps<"span">) {
     return (
         <span
             data-slot="num"
@@ -13,4 +13,4 @@ function Num({ className, ...props }: React.ComponentProps<"span">) {
     );
 }
 
-export { Num };
+export { Pill };
