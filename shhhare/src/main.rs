@@ -70,6 +70,7 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Route::new()
         .at("/", get(render_app).with(&app_cache_mw))
+        .at("/s/:secret_key", get(render_app).with(&app_cache_mw))
         .at("/favicon.ico", get(favicon_ico).with(&ico_cache_mw))
         .at("/favicon.png", get(favicon_png).with(&ico_cache_mw))
         .at("/doc/", get(render_doc))

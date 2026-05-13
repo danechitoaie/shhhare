@@ -29,7 +29,7 @@ import {
 import { fmtBytes } from "@/lib/utils";
 import { fileToBase64 } from "@/lib/base64";
 import { encrypt, type EncryptResult } from "@/lib/crypto";
-import { APP_DATA } from "@/lib/config";
+import { APP_DATA } from "@/config";
 
 type EncryptProps = {
     onSetStoredSecret: (storedSecret: { secretKey: string; decryptionKey: string } | null) => void;
