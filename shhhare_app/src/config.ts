@@ -1,4 +1,8 @@
 export interface AppData {
+    c: number;
+    r: string;
+    v: string;
+    h: string;
     b: number;
 }
 

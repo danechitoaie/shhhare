@@ -36,6 +36,7 @@ pub fn get_app_html(code: u16, reason: &str) -> String {
                 "r": reason,
                 "v": ver,
                 "h": rev,
+                "b": 1048576,
             })
             .to_string()
             .as_str(),
