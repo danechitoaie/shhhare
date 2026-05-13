@@ -42,7 +42,7 @@ export function RevealedPanel({ payload, bar }: RevealedPanelProps) {
         <div className="flex flex-col gap-6">
             <div>
                 <h1 className="text-lg font-semibold mb-2">Secret revealed</h1>
-                {!bar ? (
+                {bar ? (
                     <div className="flex items-start gap-3 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3">
                         <FlameIcon className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
                         <div className="text-sm">
