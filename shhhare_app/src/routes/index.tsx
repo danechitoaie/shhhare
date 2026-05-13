@@ -203,7 +203,7 @@ export function Encrypt({ onSetStoredSecret }: EncryptProps) {
                 <Textarea
                     id="secret"
                     className="mt-2 py-3.5 px-4 min-h-58 resize-y font-mono placeholder:text-muted-foreground"
-                    placeholder="Type the thing only they should see..."
+                    placeholder="Type the thing only they should see…"
                     spellCheck={false}
                     value={text}
                     onChange={(e) => setText(e.target.value)}

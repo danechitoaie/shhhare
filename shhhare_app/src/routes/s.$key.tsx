@@ -64,7 +64,10 @@ function Secret() {
                 }
 
                 if (!res.ok) {
-                    setStatus({ kind: "error", message: `Server returned status ${res.status}.` });
+                    setStatus({
+                        kind: "error",
+                        message: "Failed to fetch secret status!",
+                    });
                     return;
                 }
 
@@ -83,7 +86,7 @@ function Secret() {
                 if (!cancelled) {
                     setStatus({
                         kind: "error",
-                        message: "Could not reach the server. Please check your connection and try again.",
+                        message: "Could not reach the server!",
                     });
                 }
             }
