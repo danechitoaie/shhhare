@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { AlertTriangleIcon, ClockIcon, EyeIcon, FlameIcon, KeyIcon, Loader2Icon, SearchXIcon } from "lucide-react";
+import { AlertTriangleIcon, ClockIcon, FlameIcon, KeyIcon, Loader2Icon, SearchXIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -250,7 +250,7 @@ function ReadyPanel({ bar, exp, decryptionKey, onExpired }: ReadyPanelProps) {
                         // { t, f } payload (text + files).
                     }}
                 >
-                    <EyeIcon className="h-4 w-4" />
+                    <KeyIcon className="h-4 w-4" />
                     Reveal secret
                 </Button>
             </div>
