@@ -125,14 +125,14 @@ impl SecretApi {
         };
 
         let (bar, val) = match raw.split_once('|') {
-            Some((bar, val)) => (bar, val),
+            Some((bar, val)) => (bar == "1", val),
             None => {
                 let details = "Failed to parse the secret!";
                 return GetSecretResponse::internal_server_error(details);
             }
         };
 
-        if bar == "1" {
+        if bar {
             if let Err(err) = connection_manager.del::<_, ()>(&key).await {
                 tracing::error!("{:?}", err);
                 let details = "Failed to delete the secret!";
