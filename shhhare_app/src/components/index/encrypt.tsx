@@ -46,6 +46,8 @@ export function EncryptPanel({ onSetStoredSecret }: EncryptPanelProps) {
     const [encrypting, setEncrypting] = useState<boolean>(false);
     const [submitting, setSubmitting] = useState<boolean>(false);
     const [errorOpen, setErrorOpen] = useState<boolean>(false);
+    const [errorTitle, setErrorTitle] = useState<string>("");
+    const [errorDescription, setErrorDescription] = useState<string>("");
     const [errorMessage, setErrorMessage] = useState<string>("");
 
     const maxBytes = APP_DATA.b;
@@ -99,9 +101,29 @@ export function EncryptPanel({ onSetStoredSecret }: EncryptPanelProps) {
         };
     }, [text, files]);
 
+    const showError = (title: string, description: string, message: string) => {
+        setErrorTitle(title);
+        setErrorDescription(description);
+        setErrorMessage(message);
+        setErrorOpen(true);
+    };
+
     const addFiles = (incoming: FileList | File[]) => {
         const arr = Array.from(incoming);
         if (arr.length === 0) {
+            return;
+        }
+
+        const incomingSize = arr.reduce((sum, file) => sum + file.size, 0);
+        const existingSize = files.reduce((sum, file) => sum + file.size, 0);
+        const totalSize = incomingSize + existingSize;
+
+        if (totalSize > maxBytes) {
+            showError(
+                "Files too large",
+                "These files exceed the maximum allowed size.",
+                `Total size would be ${fmtBytes(totalSize)}, but the limit is ${fmtBytes(maxBytes)}.`,
+            );
             return;
         }
 
@@ -162,8 +184,11 @@ export function EncryptPanel({ onSetStoredSecret }: EncryptPanelProps) {
             });
         } catch (err) {
             console.error(err);
-            setErrorMessage(err instanceof Error ? err.message : "Failed to store the secret.");
-            setErrorOpen(true);
+            showError(
+                "Submission failed",
+                "Unable to store your secret on the server.",
+                err instanceof Error ? err.message : "Failed to store the secret.",
+            );
             setSubmitting(false);
         }
     };
@@ -399,9 +424,9 @@ export function EncryptPanel({ onSetStoredSecret }: EncryptPanelProps) {
             <Dialog open={errorOpen} onOpenChange={setErrorOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Submission failed</DialogTitle>
-                        <DialogDescription>Unable to store your secret on the server.</DialogDescription>
-                    </DialogHeader>
+                        <DialogTitle>{errorTitle}</DialogTitle>
+                        <DialogDescription>{errorDescription}</DialogDescription>
+                    </DialogHeader>{" "}
                     <p className="px-3 py-2 rounded-md border bg-muted/30 break-all font-mono text-[12px] text-muted-foreground">
                         {errorMessage}
                     </p>
