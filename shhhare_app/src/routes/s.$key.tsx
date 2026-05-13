@@ -96,7 +96,7 @@ function Secret() {
 
     return (
         <div className="px-4">
-            <div className="my-10 px-8 sm:px-12 py-8 max-w-lg lg:max-w-2xl mx-auto bg-background rounded-lg shadow-md border">
+            <div className="my-10 px-12 py-8 max-w-lg lg:max-w-4xl mx-auto bg-background rounded-lg shadow-md border">
                 {status.kind === "loading" && <LoadingPanel />}
                 {status.kind === "not_found" && <NotFoundPanel />}
                 {status.kind === "error" && <ErrorPanel message={status.message} />}
@@ -197,18 +197,16 @@ function ReadyPanel({ bar, exp, decryptionKey, onExpired }: ReadyPanelProps) {
                 </div>
             )}
 
-            <div className="flex items-center gap-3 rounded-md border bg-muted/30 px-4 py-3">
+            <div className="flex items-center justify-center gap-2 rounded-md border bg-muted/30 px-4 py-3">
                 <ClockIcon className="h-5 w-5 text-muted-foreground shrink-0" />
-                <div className="text-sm">
-                    <div className="text-muted-foreground">
-                        {remainingMs <= 0 ? (
-                            <span className="font-semibold">Expired!</span>
-                        ) : (
-                            <>
-                                Expires in <span className="font-semibold">{formatRemaining(remainingMs)}</span>
-                            </>
-                        )}
-                    </div>
+                <div className="text-sm text-muted-foreground text-center">
+                    {remainingMs <= 0 ? (
+                        <span className="font-semibold">Expired!</span>
+                    ) : (
+                        <>
+                            Expires in <span className="font-semibold">{formatRemaining(remainingMs)}</span>
+                        </>
+                    )}
                 </div>
             </div>
 
