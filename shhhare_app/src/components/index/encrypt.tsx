@@ -79,8 +79,12 @@ export function EncryptPanel({ onSetStoredSecret }: EncryptPanelProps) {
                     return;
                 }
 
-                const json = JSON.stringify({ t: text, f });
-                const result = await encrypt(json);
+                const result = await encrypt(
+                    JSON.stringify({
+                        t: text,
+                        f,
+                    }),
+                );
 
                 if (cancelled) {
                     return;
@@ -120,6 +124,16 @@ export function EncryptPanel({ onSetStoredSecret }: EncryptPanelProps) {
                 "Payload too large",
                 "You're already over the size limit. Remove some content before adding more files.",
                 `Current payload is ${fmtBytes(totalBytes)}, but the limit is ${fmtBytes(maxBytes)}.`,
+            );
+            return;
+        }
+
+        const incomingSize = arr.reduce((sum, file) => sum + file.size, 0);
+        if (incomingSize > maxBytes) {
+            showError(
+                "Files too large",
+                "The selected files exceed the maximum allowed size on their own.",
+                `Selected files total ${fmtBytes(incomingSize)}, but the limit is ${fmtBytes(maxBytes)}.`,
             );
             return;
         }
