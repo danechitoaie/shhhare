@@ -18,7 +18,7 @@ const HTML_TEMPLATE: &str = r#"
 </html>
 "#;
 
-pub fn get_app_html(code: u16, reason: &str) -> String {
+pub fn get_app_html(code: u16, reason: &str, b: u64) -> String {
     let ver = env!("CARGO_PKG_VERSION");
     let rev = option_env!("GIT_HASH").unwrap_or("dev");
 
@@ -36,7 +36,7 @@ pub fn get_app_html(code: u16, reason: &str) -> String {
                 "r": reason,
                 "v": ver,
                 "h": rev,
-                "b": 1048576,
+                "b": b,
             })
             .to_string()
             .as_str(),
