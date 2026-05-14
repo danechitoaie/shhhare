@@ -1,8 +1,8 @@
 # Shhhare!
 /shhhare/.env
 /shhhare/target/
-/shhhare/files/app/
-/shhhare/files/doc/
+/shhhare/static/app/
+/shhhare/static/doc/
 
 # Shhhare! (app)
 /shhhare_app/.tanstack/
