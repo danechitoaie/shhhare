@@ -28,7 +28,8 @@ import {
 } from "@/components/ui/dialog";
 import { fmtBytes } from "@/lib/utils";
 import { fileToBase64 } from "@/lib/base64";
-import { encrypt, type EncryptResult } from "@/lib/crypto";
+import { encryptInWorker } from "@/lib/crypto";
+import type { EncryptResult } from "@/workers/encrypt";
 import { APP_DATA } from "@/config";
 
 type EncryptPanelProps = {
@@ -55,6 +56,13 @@ export function EncryptPanel({ onSetStoredSecret }: EncryptPanelProps) {
     const over = totalBytes > maxBytes;
     const percentage = Math.min(100, (totalBytes / maxBytes) * 100);
 
+    const showError = (title: string, description: string, message: string) => {
+        setErrorTitle(title);
+        setErrorDescription(description);
+        setErrorMessage(message);
+        setErrorOpen(true);
+    };
+
     useEffect(() => {
         if (text === "" && files.length === 0) {
             setPayload(null);
@@ -79,7 +87,7 @@ export function EncryptPanel({ onSetStoredSecret }: EncryptPanelProps) {
                     return;
                 }
 
-                const result = await encrypt(
+                const result = await encryptInWorker(
                     JSON.stringify({
                         t: text,
                         f,
@@ -92,10 +100,15 @@ export function EncryptPanel({ onSetStoredSecret }: EncryptPanelProps) {
 
                 setPayload(result);
                 setEncrypting(false);
-            } catch {
+            } catch (err) {
                 if (!cancelled) {
                     setPayload(null);
                     setEncrypting(false);
+                    showError(
+                        "Encryption failed",
+                        "Something went wrong while encrypting your secret.",
+                        err instanceof Error ? err.message : "Unknown error.",
+                    );
                 }
             }
         }, 500);
@@ -105,13 +118,6 @@ export function EncryptPanel({ onSetStoredSecret }: EncryptPanelProps) {
             clearTimeout(handle);
         };
     }, [text, files]);
-
-    const showError = (title: string, description: string, message: string) => {
-        setErrorTitle(title);
-        setErrorDescription(description);
-        setErrorMessage(message);
-        setErrorOpen(true);
-    };
 
     const addFiles = (incoming: FileList | File[]) => {
         const arr = Array.from(incoming);

@@ -1,33 +1,48 @@
-import bs58 from "bs58";
-import { bytesToBase64, base64ToBytes } from "./base64";
+import EncryptWorker from "@/workers/encrypt?worker";
+import type { EncryptResult } from "@/workers/encrypt";
+import DecryptWorker from "@/workers/decrypt?worker";
+import type { DecryptRequest } from "@/workers/decrypt";
 
-export type EncryptResult = {
-    val: string;
-    key: string;
-};
+export function encryptInWorker(plaintext: string): Promise<EncryptResult> {
+    return new Promise((resolve, reject) => {
+        const worker = new EncryptWorker();
 
-export async function encrypt(plaintext: string): Promise<EncryptResult> {
-    const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(plaintext));
-    const rawKey = new Uint8Array(await crypto.subtle.exportKey("raw", key));
+        worker.onmessage = (e: MessageEvent<{ result?: EncryptResult; error?: string }>) => {
+            worker.terminate();
+            if (e.data.error) {
+                reject(new Error(e.data.error));
+            } else {
+                resolve(e.data.result!);
+            }
+        };
 
-    const secret = new Uint8Array(rawKey.byteLength + iv.byteLength);
-    secret.set(rawKey, 0);
-    secret.set(iv, rawKey.byteLength);
+        worker.onerror = (e) => {
+            worker.terminate();
+            reject(e);
+        };
 
-    return {
-        val: bytesToBase64(new Uint8Array(ciphertext)),
-        key: bs58.encode(secret),
-    };
+        worker.postMessage(plaintext);
+    });
 }
 
-export async function decrypt(ciphertext: string, secret: string): Promise<string> {
-    const secretBytes = bs58.decode(secret);
-    const rawKey = secretBytes.slice(0, 32);
-    const iv = secretBytes.slice(32);
-    const data = base64ToBytes(ciphertext).buffer as ArrayBuffer;
-    const key = await crypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, ["decrypt"]);
-    const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, data);
-    return new TextDecoder().decode(plaintext);
+export function decryptInWorker(ciphertext: string, secret: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const worker = new DecryptWorker();
+
+        worker.onmessage = (e: MessageEvent<{ result?: string; error?: string }>) => {
+            worker.terminate();
+            if (e.data.error) {
+                reject(new Error(e.data.error));
+            } else {
+                resolve(e.data.result!);
+            }
+        };
+
+        worker.onerror = (e) => {
+            worker.terminate();
+            reject(e);
+        };
+
+        worker.postMessage({ ciphertext, secret } satisfies DecryptRequest);
+    });
 }

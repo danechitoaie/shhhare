@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ClockIcon, FlameIcon, KeyIcon, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { decrypt } from "@/lib/crypto";
+import { decryptInWorker } from "@/lib/crypto";
 import { cn } from "@/lib/utils";
 import { RevealedPanel } from "./revealed";
 
@@ -116,7 +116,7 @@ export function ReadyPanel({ bar, exp, secretKey, decryptionKey, onExpired }: Re
 
         let plaintext: string;
         try {
-            plaintext = await decrypt(data.val, effectiveKey);
+            plaintext = await decryptInWorker(data.val, effectiveKey);
         } catch (err) {
             console.error(err);
             setReveal({
