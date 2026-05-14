@@ -66,13 +66,14 @@ export function EncryptPanel({ onSetStoredSecret }: EncryptPanelProps) {
         setEncrypting(true);
         const handle = setTimeout(async () => {
             try {
-                const f = await Promise.all(
-                    files.map(async (file) => ({
+                const f = [];
+                for (const file of files) {
+                    f.push({
                         n: file.name,
                         t: file.type,
                         c: await fileToBase64(file),
-                    })),
-                );
+                    });
+                }
 
                 if (cancelled) {
                     return;
@@ -114,15 +115,11 @@ export function EncryptPanel({ onSetStoredSecret }: EncryptPanelProps) {
             return;
         }
 
-        const existingSize = text.length + files.reduce((sum, file) => sum + file.size, 0);
-        const incomingSize = arr.reduce((sum, file) => sum + file.size, 0);
-        const totalSize = existingSize + incomingSize;
-
-        if (totalSize > maxBytes) {
+        if (over) {
             showError(
-                "Files too large",
-                "Adding these files would exceed the maximum allowed size.",
-                `Total size would be ${fmtBytes(totalSize)}, but the limit is ${fmtBytes(maxBytes)}.`,
+                "Payload too large",
+                "You're already over the size limit. Remove some content before adding more files.",
+                `Current payload is ${fmtBytes(totalBytes)}, but the limit is ${fmtBytes(maxBytes)}.`,
             );
             return;
         }
