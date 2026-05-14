@@ -20,10 +20,8 @@ const HTML_TEMPLATE: &str = r#"
 
 pub fn get_app_html(code: u16, reason: &str, b: u64) -> String {
     let ver = env!("CARGO_PKG_VERSION");
-    let rev = option_env!("GIT_HASH").unwrap_or("dev");
-
-    let stylesheet = format!("/static/v{ver}-{rev}/app/main.css");
-    let script = format!("/static/v{ver}-{rev}/app/main.js");
+    let stylesheet = format!("/static/v{ver}/app/main.css");
+    let script = format!("/static/v{ver}/app/main.js");
 
     HTML_TEMPLATE
         .replace("{:title}", "Shhhare!")
@@ -35,7 +33,6 @@ pub fn get_app_html(code: u16, reason: &str, b: u64) -> String {
                 "c": code,
                 "r": reason,
                 "v": ver,
-                "h": rev,
                 "b": b,
             })
             .to_string()
@@ -45,10 +42,8 @@ pub fn get_app_html(code: u16, reason: &str, b: u64) -> String {
 
 pub fn get_err_html(code: u16, reason: &str) -> String {
     let ver = env!("CARGO_PKG_VERSION");
-    let rev = option_env!("GIT_HASH").unwrap_or("dev");
-
-    let stylesheet = format!("/static/v{ver}-{rev}/app/main.css");
-    let script = format!("/static/v{ver}-{rev}/app/main.js");
+    let stylesheet = format!("/static/v{ver}/app/main.css");
+    let script = format!("/static/v{ver}/app/main.js");
 
     HTML_TEMPLATE
         .replace("{:title}", "Shhhare!")
@@ -60,7 +55,6 @@ pub fn get_err_html(code: u16, reason: &str) -> String {
                 "c": code,
                 "r": reason,
                 "v": ver,
-                "h": rev,
             })
             .to_string()
             .as_str(),
@@ -69,10 +63,8 @@ pub fn get_err_html(code: u16, reason: &str) -> String {
 
 pub fn get_doc_html(code: u16, reason: &str) -> String {
     let ver = env!("CARGO_PKG_VERSION");
-    let rev = option_env!("GIT_HASH").unwrap_or("dev");
-
-    let stylesheet = format!("/static/v{ver}-{rev}/doc/main.css");
-    let script = format!("/static/v{ver}-{rev}/doc/main.js");
+    let stylesheet = format!("/static/v{ver}/doc/main.css");
+    let script = format!("/static/v{ver}/doc/main.js");
 
     HTML_TEMPLATE
         .replace("{:title}", "Shhhare! - API Docs")
@@ -84,7 +76,6 @@ pub fn get_doc_html(code: u16, reason: &str) -> String {
                 "c": code,
                 "r": reason,
                 "v": ver,
-                "h": rev,
             })
             .to_string()
             .as_str(),
