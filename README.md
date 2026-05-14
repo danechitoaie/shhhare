@@ -20,6 +20,28 @@ The server never sees your plaintext. Encryption and decryption happen entirely 
 
 ---
 
+## Screenshots
+
+### 1. Compose a secret
+
+Type the payload, optionally attach files, pick an expiry (1 hour / 1 day / 1 week) and an access mode (burn-after-read or multiple reads). The live payload meter shows the encrypted size against the configured `MAX_SIZE`.
+
+![Compose a secret](images/1.png)
+
+### 2. Share the link
+
+After encryption, you get a one-click link (with the key in the URL fragment), a short link (without the key — share it through a separate channel), and the raw decryption key. Each has a Copy button and a QR code for easy hand-off.
+
+![Share the encrypted secret](images/2.png)
+
+### 3. Reveal on the other side
+
+The recipient sees a clear warning when the secret is set to burn after reading, plus the remaining TTL. Decryption only happens after they explicitly click **Reveal secret**.
+
+![Reveal the secret](images/3.png)
+
+---
+
 ## Architecture
 
 ```
