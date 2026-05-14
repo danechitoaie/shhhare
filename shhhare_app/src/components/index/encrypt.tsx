@@ -439,7 +439,7 @@ export function EncryptPanel({ onSetStoredSecret }: EncryptPanelProps) {
             </div>
 
             <Dialog open={errorOpen} onOpenChange={setErrorOpen}>
-                <DialogContent>
+                <DialogContent className="top-60 translate-y-0">
                     <DialogHeader>
                         <DialogTitle>{errorTitle}</DialogTitle>
                         <DialogDescription>{errorDescription}</DialogDescription>

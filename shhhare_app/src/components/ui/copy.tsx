@@ -68,7 +68,7 @@ export function Copy({ label, copy, qr, display, icon, hint }: CopyProps) {
                             <span>QR</span>
                         </button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="top-14 translate-y-0">
                         <DialogHeader>
                             <DialogTitle>{label}</DialogTitle>
                             <DialogDescription>Scan this QR code to copy the value.</DialogDescription>
@@ -95,7 +95,7 @@ export function Copy({ label, copy, qr, display, icon, hint }: CopyProps) {
             </div>
             <p className="mt-1.5 text-[12px] text-muted-foreground">{hint}</p>
             <Dialog open={errorOpen} onOpenChange={setErrorOpen}>
-                <DialogContent>
+                <DialogContent className="top-14 translate-y-0">
                     <DialogHeader>
                         <DialogTitle>Copy failed</DialogTitle>
                         <DialogDescription>
