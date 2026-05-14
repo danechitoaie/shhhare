@@ -19,7 +19,7 @@ use crate::handlers::api::health::HealthApi;
 use crate::handlers::api::secret::SecretApi;
 use crate::handlers::app::render_app;
 use crate::handlers::doc::render_doc;
-use crate::handlers::favicon::{favicon_ico, favicon_png};
+use crate::handlers::favicon::{favicon_ico, favicon_png, favicon_svg};
 use crate::middleware::ErrorHandler;
 
 #[tokio::main]
@@ -70,8 +70,9 @@ async fn main() -> anyhow::Result<()> {
     let app = Route::new()
         .at("/", get(render_app).with(&app_cache_mw))
         .at("/s/:secret_key", get(render_app).with(&app_cache_mw))
-        .at("/favicon.ico", get(favicon_ico).with(&ico_cache_mw))
+        .at("/favicon.svg", get(favicon_svg).with(&ico_cache_mw))
         .at("/favicon.png", get(favicon_png).with(&ico_cache_mw))
+        .at("/favicon.ico", get(favicon_ico).with(&ico_cache_mw))
         .at("/doc/", get(render_doc))
         .at("/doc/schema.json", get(api.spec_endpoint()))
         .nest("/api", api)
