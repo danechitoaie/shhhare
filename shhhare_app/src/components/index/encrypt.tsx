@@ -388,7 +388,7 @@ export function EncryptPanel({ onSetStoredSecret }: EncryptPanelProps) {
                 <div className="flex items-center justify-between text-[13px]">
                     <span className="text-muted-foreground">
                         Payload
-                        <span className="ml-2 text-[11px] text-muted-foreground/80">
+                        <span className="ml-2 text-[11px] text-muted-foreground/80 hidden sm:inline">
                             (size of the data after encryption)
                         </span>
                     </span>
