@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use clap::Parser as _;
 use dotenvy::dotenv;
 use poem::endpoint::EmbeddedFilesEndpoint;
@@ -11,6 +13,7 @@ mod files;
 mod handlers;
 mod middleware;
 mod models;
+mod storage;
 mod template;
 
 use crate::config::Config;
@@ -21,6 +24,7 @@ use crate::handlers::app::render_app;
 use crate::handlers::doc::render_doc;
 use crate::handlers::favicon::{favicon_ico, favicon_png, favicon_svg};
 use crate::middleware::ErrorHandler;
+use crate::storage::Storage;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -36,9 +40,8 @@ async fn main() -> anyhow::Result<()> {
     let ver = env!("CARGO_PKG_VERSION");
     let rev = option_env!("GIT_HASH").unwrap_or("0000000");
 
-    println!("[ 📦 ] Connecting to Redis...");
-    let client = redis::Client::open(cfg.redis_url.clone())?;
-    let connection_manager = redis::aio::ConnectionManager::new(client).await?;
+    println!("[ 📦 ] Initializing storage backend ({:?})...", cfg.storage);
+    let storage: Arc<dyn Storage> = storage::build(&cfg.storage_config()).await?;
 
     let static_path = format!("/static/v{ver}-{rev}");
     let static_ep = {
@@ -79,7 +82,7 @@ async fn main() -> anyhow::Result<()> {
         .nest("/api", api)
         .nest(static_path, static_ep)
         .data(cfg)
-        .data(connection_manager)
+        .data(storage)
         .with(CatchPanic::new())
         .with(ErrorHandler::new());
 
