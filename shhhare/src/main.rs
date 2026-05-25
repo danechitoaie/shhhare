@@ -40,7 +40,7 @@ async fn main() -> anyhow::Result<()> {
     let ver = env!("CARGO_PKG_VERSION");
 
     println!("[ 📦 ] Initializing storage backend ({:?})...", cfg.storage);
-    let storage: Arc<dyn Storage> = storage::build(&cfg.storage_config()).await?;
+    let storage: Arc<dyn Storage> = storage::build(&cfg.storage_config()?).await?;
 
     let static_path = format!("/static/v{ver}");
     let static_ep = {

@@ -65,7 +65,7 @@ fn now_secs() -> u64 {
 
 #[async_trait]
 impl Storage for CloudflareKvStorage {
-    async fn set_nx_ex(&self, key: &str, value: &[u8], ttl_secs: u64) -> anyhow::Result<bool> {
+    async fn set(&self, key: &str, value: &[u8], ttl_secs: u64) -> anyhow::Result<bool> {
         // Best-effort NX: check existence first.
         let head = self
             .http
@@ -106,7 +106,7 @@ impl Storage for CloudflareKvStorage {
         Ok(true)
     }
 
-    async fn get_with_ttl(&self, key: &str) -> anyhow::Result<Option<StoredValue>> {
+    async fn get(&self, key: &str) -> anyhow::Result<Option<StoredValue>> {
         let res = self
             .http
             .get(self.value_url(key))
@@ -117,6 +117,7 @@ impl Storage for CloudflareKvStorage {
         if res.status() == StatusCode::NOT_FOUND {
             return Ok(None);
         }
+
         if !res.status().is_success() {
             let status = res.status();
             let text = res.text().await.unwrap_or_default();
@@ -128,15 +129,15 @@ impl Storage for CloudflareKvStorage {
             anyhow::bail!("cloudflare kv value missing expires_at prefix");
         };
         let (prefix, rest) = raw.split_at(sep);
-        let value = rest[1..].to_vec();
+        let val = rest[1..].to_vec();
 
         let expires_at: u64 = std::str::from_utf8(prefix)?.parse()?;
-        let ttl_secs = (expires_at as i64).saturating_sub(now_secs() as i64).max(0);
+        let ttl = (expires_at as i64).saturating_sub(now_secs() as i64).max(0);
 
-        Ok(Some(StoredValue { value, ttl_secs }))
+        Ok(Some(StoredValue { val, ttl }))
     }
 
-    async fn delete(&self, key: &str) -> anyhow::Result<()> {
+    async fn del(&self, key: &str) -> anyhow::Result<()> {
         let res = self
             .http
             .delete(self.value_url(key))
@@ -152,7 +153,7 @@ impl Storage for CloudflareKvStorage {
         anyhow::bail!("cloudflare kv delete failed ({status}): {text}");
     }
 
-    async fn health(&self) -> anyhow::Result<()> {
+    async fn chk(&self) -> anyhow::Result<()> {
         let url = format!("{}/keys?limit=1", self.base_url);
         let res = self.http.get(url).bearer_auth(&self.token).send().await?;
 
