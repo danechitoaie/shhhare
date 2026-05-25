@@ -19,6 +19,9 @@ RUN npm run build
 ###############################################################################
 FROM rust:1.95 AS rust
 
+ARG GIT_HASH
+ENV GIT_HASH=${GIT_HASH}
+
 WORKDIR /app
 COPY . .
 

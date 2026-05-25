@@ -34,12 +34,13 @@ async fn main() -> anyhow::Result<()> {
 
     let cfg = Config::parse();
     let ver = env!("CARGO_PKG_VERSION");
+    let rev = option_env!("GIT_HASH").unwrap_or("0000000");
 
     println!("[ 📦 ] Connecting to Redis...");
     let client = redis::Client::open(cfg.redis_url.clone())?;
     let connection_manager = redis::aio::ConnectionManager::new(client).await?;
 
-    let static_path = format!("/static/v{ver}");
+    let static_path = format!("/static/v{ver}-{rev}");
     let static_ep = {
         let cc_h_key = poem::http::header::CACHE_CONTROL;
         let cc_h_val = "max-age=31536000, immutable";

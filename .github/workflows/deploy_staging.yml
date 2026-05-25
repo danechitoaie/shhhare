@@ -18,6 +18,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Get short commit hash
+        id: vars
+        run: echo "git_hash=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -35,6 +39,7 @@ jobs:
           push: true
           tags: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/${{ secrets.AZURE_CONTAINER_USERNAME }}/shhhare:latest
           file: ./Dockerfile
+          build-args: GIT_HASH=${{ steps.vars.outputs.git_hash }}
 
   deploy:
     permissions: {}
