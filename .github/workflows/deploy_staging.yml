@@ -33,7 +33,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/${{ secrets.AZURE_CONTAINER_USERNAME }}/shhhare:${{ github.sha }}
+          tags: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/${{ secrets.AZURE_CONTAINER_USERNAME }}/shhhare:latest
           file: ./Dockerfile
 
   deploy:
@@ -47,4 +47,4 @@ jobs:
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/${{ secrets.AZURE_CONTAINER_USERNAME }}/shhhare:${{ github.sha }}
+          images: ${{ secrets.AZURE_CONTAINER_REGISTRY }}/${{ secrets.AZURE_CONTAINER_USERNAME }}/shhhare:latest
