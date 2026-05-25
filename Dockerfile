@@ -22,8 +22,8 @@ FROM rust:1.95 AS rust
 WORKDIR /app
 COPY . .
 
-WORKDIR /app/shhhare/files
-COPY --from=node /app/shhhare/files .
+WORKDIR /app/shhhare/static
+COPY --from=node /app/shhhare/static .
 
 WORKDIR /app/shhhare
 RUN cargo build --release
