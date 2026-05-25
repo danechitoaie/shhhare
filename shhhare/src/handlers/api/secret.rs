@@ -56,7 +56,7 @@ impl SecretApi {
         let payload = encode_payload(body.bar, &body.val);
         let ttl = body.ttl.as_seconds();
 
-        let stored = match storage.set_nx_ex(&key, &payload, ttl).await {
+        let stored = match storage.set(&key, &payload, ttl).await {
             Ok(stored) => stored,
             Err(err) => {
                 tracing::error!("{:?}", err);
@@ -79,7 +79,7 @@ impl SecretApi {
         Data(storage): Data<&Arc<dyn Storage>>,
         Path(key): Path<String>,
     ) -> GetStatusResponse {
-        let entry = match storage.get_with_ttl(&key).await {
+        let entry = match storage.get(&key).await {
             Ok(entry) => entry,
             Err(err) => {
                 tracing::error!("{:?}", err);
@@ -93,8 +93,8 @@ impl SecretApi {
             return GetStatusResponse::not_found(details);
         };
 
-        let bar = entry.value.starts_with(b"1|");
-        GetStatusResponse::ok(entry.ttl_secs, bar)
+        let bar = entry.val.starts_with(b"1|");
+        GetStatusResponse::ok(entry.ttl, bar)
     }
 
     #[oai(path = "/secret/:key", method = "post", tag = ApiTags::Secret)]
@@ -103,7 +103,7 @@ impl SecretApi {
         Data(storage): Data<&Arc<dyn Storage>>,
         Path(key): Path<String>,
     ) -> GetSecretResponse {
-        let entry = match storage.get_with_ttl(&key).await {
+        let entry = match storage.get(&key).await {
             Ok(entry) => entry,
             Err(err) => {
                 tracing::error!("{:?}", err);
@@ -117,13 +117,13 @@ impl SecretApi {
             return GetSecretResponse::not_found(details);
         };
 
-        let Some((bar, val)) = decode_payload(&entry.value) else {
+        let Some((bar, val)) = decode_payload(&entry.val) else {
             let details = "Failed to parse the secret!";
             return GetSecretResponse::internal_server_error(details);
         };
 
         if bar {
-            if let Err(err) = storage.delete(&key).await {
+            if let Err(err) = storage.del(&key).await {
                 tracing::error!("{:?}", err);
                 let details = "Failed to delete the secret!";
                 return GetSecretResponse::internal_server_error(details);
@@ -132,6 +132,6 @@ impl SecretApi {
             return GetSecretResponse::ok(val, 0);
         }
 
-        GetSecretResponse::ok(val, entry.ttl_secs)
+        GetSecretResponse::ok(val, entry.ttl)
     }
 }

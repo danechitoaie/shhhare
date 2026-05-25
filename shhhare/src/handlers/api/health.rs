@@ -14,7 +14,7 @@ impl HealthApi {
     /// Health check
     #[oai(path = "/health", method = "get", tag = ApiTags::Health)]
     async fn health(&self, Data(storage): Data<&Arc<dyn Storage>>) -> HealthResponse {
-        match storage.health().await {
+        match storage.chk().await {
             Ok(()) => HealthResponse::ok(),
             Err(err) => {
                 tracing::error!("{:?}", err);

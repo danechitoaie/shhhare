@@ -41,7 +41,7 @@ async fn main() -> anyhow::Result<()> {
     let rev = option_env!("GIT_HASH").unwrap_or("0000000");
 
     println!("[ 📦 ] Initializing storage backend ({:?})...", cfg.storage);
-    let storage: Arc<dyn Storage> = storage::build(&cfg.storage_config()).await?;
+    let storage: Arc<dyn Storage> = storage::build(&cfg.storage_config()?).await?;
 
     let static_path = format!("/static/v{ver}-{rev}");
     let static_ep = {

@@ -10,15 +10,15 @@ pub struct RedisStorage {
 
 impl RedisStorage {
     pub async fn connect(url: &str) -> anyhow::Result<Self> {
-        let client = redis::Client::open(url)?;
-        let cm = ConnectionManager::new(client).await?;
+        let cl = redis::Client::open(url)?;
+        let cm = ConnectionManager::new(cl).await?;
         Ok(Self { cm })
     }
 }
 
 #[async_trait]
 impl Storage for RedisStorage {
-    async fn set_nx_ex(&self, key: &str, value: &[u8], ttl_secs: u64) -> anyhow::Result<bool> {
+    async fn set(&self, key: &str, value: &[u8], ttl_secs: u64) -> anyhow::Result<bool> {
         let mut cm = self.cm.clone();
         let opt = redis::SetOptions::default()
             .conditional_set(redis::ExistenceCheck::NX)
@@ -28,24 +28,21 @@ impl Storage for RedisStorage {
         Ok(res.is_some())
     }
 
-    async fn get_with_ttl(&self, key: &str) -> anyhow::Result<Option<StoredValue>> {
+    async fn get(&self, key: &str) -> anyhow::Result<Option<StoredValue>> {
         let mut cm = self.cm.clone();
         let (val, ttl): (Option<Vec<u8>>, i64) =
             redis::pipe().get(key).ttl(key).query_async(&mut cm).await?;
 
-        Ok(val.map(|value| StoredValue {
-            value,
-            ttl_secs: ttl,
-        }))
+        Ok(val.map(|val| StoredValue { val, ttl }))
     }
 
-    async fn delete(&self, key: &str) -> anyhow::Result<()> {
+    async fn del(&self, key: &str) -> anyhow::Result<()> {
         let mut cm = self.cm.clone();
         cm.del::<_, ()>(key).await?;
         Ok(())
     }
 
-    async fn health(&self) -> anyhow::Result<()> {
+    async fn chk(&self) -> anyhow::Result<()> {
         let mut cm = self.cm.clone();
         let res: String = redis::cmd("PING").query_async(&mut cm).await?;
         if res != "PONG" {
