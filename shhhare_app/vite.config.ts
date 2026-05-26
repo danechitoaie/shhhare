@@ -33,6 +33,11 @@ export default defineConfig(({ mode }) => {
                             if (isCss) {
                                 return "[name].css";
                             }
+
+                            const isWoff2 = assetInfo.names.some((n) => n.endsWith(".woff2"));
+                            if (isWoff2) {
+                                return "[name].woff2";
+                            }
                         }
 
                         return "[name]-[hash][extname]";
