@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
         plugins: [
             tanstackRouter({
                 target: "react",
-                autoCodeSplitting: true,
+                autoCodeSplitting: false,
                 quoteStyle: "double",
             }),
             react(),
@@ -21,11 +21,12 @@ export default defineConfig(({ mode }) => {
         build: {
             chunkSizeWarningLimit: 4096,
             sourcemap: mode !== "production",
+            cssCodeSplit: false,
             rollupOptions: {
                 input: "src/main.tsx",
                 output: {
+                    inlineDynamicImports: true,
                     entryFileNames: "[name].js",
-                    chunkFileNames: "[name]-[hash].js",
                     assetFileNames: (assetInfo) => {
                         if (Array.isArray(assetInfo.names)) {
                             const isCss = assetInfo.names.some((n) => n.endsWith(".css"));
