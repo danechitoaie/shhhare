@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { CryptoGuard } from "@/guards/crypto";
 import { ThemeProvider } from "./components/ui/theme-provider";
 import { routeTree } from "./routeTree.gen";
+import "@fontsource-variable/inter/wght.css";
 import "./main.css";
 
 const router = createRouter({ routeTree });
