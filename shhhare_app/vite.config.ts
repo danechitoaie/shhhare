@@ -21,11 +21,9 @@ export default defineConfig(({ mode }) => {
         build: {
             chunkSizeWarningLimit: 4096,
             sourcemap: mode !== "production",
-            cssCodeSplit: false,
             rollupOptions: {
                 input: "src/main.tsx",
                 output: {
-                    inlineDynamicImports: true,
                     entryFileNames: "[name].js",
                     assetFileNames: (assetInfo) => {
                         if (Array.isArray(assetInfo.names)) {
