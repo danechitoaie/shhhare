@@ -1,9 +1,9 @@
+use std::sync::Arc;
+
 use poem::web::Data;
 use poem_openapi::OpenApi;
 use poem_openapi::param::Path;
 use poem_openapi::payload::Json;
-use redis::AsyncCommands as _;
-use redis::aio::ConnectionManager;
 
 use crate::config::Config;
 use crate::models::api::ApiTags;
@@ -11,8 +11,25 @@ use crate::models::api::secret::AddSecretRequest;
 use crate::models::api::secret::AddSecretResponse;
 use crate::models::api::secret::GetSecretResponse;
 use crate::models::api::secret::GetStatusResponse;
+use crate::storage::Storage;
 
 pub struct SecretApi;
+
+fn encode_payload(bar: bool, val: &str) -> Vec<u8> {
+    let mut out = Vec::with_capacity(val.len() + 2);
+    out.push(if bar { b'1' } else { b'0' });
+    out.push(b'|');
+    out.extend_from_slice(val.as_bytes());
+    out
+}
+
+fn decode_payload(raw: &[u8]) -> Option<(bool, String)> {
+    let sep = raw.iter().position(|b| *b == b'|')?;
+    let (prefix, rest) = raw.split_at(sep);
+    let val = std::str::from_utf8(&rest[1..]).ok()?.to_string();
+    let bar = prefix == b"1";
+    Some((bar, val))
+}
 
 #[OpenApi]
 impl SecretApi {
@@ -20,7 +37,7 @@ impl SecretApi {
     async fn add_secret(
         &self,
         Data(config): Data<&Config>,
-        Data(connection_manager): Data<&ConnectionManager>,
+        Data(storage): Data<&Arc<dyn Storage>>,
         Json(body): Json<AddSecretRequest>,
     ) -> AddSecretResponse {
         if body.val.len() as u64 > config.max_size.as_u64() {
@@ -36,18 +53,11 @@ impl SecretApi {
         }
 
         let key = bs58::encode(bytes).into_string();
-        let val = format!("{}|{}", if body.bar { "1" } else { "0" }, body.val);
+        let payload = encode_payload(body.bar, &body.val);
         let ttl = body.ttl.as_seconds();
-        let opt = redis::SetOptions::default()
-            .conditional_set(redis::ExistenceCheck::NX)
-            .with_expiration(redis::SetExpiry::EX(ttl));
 
-        let mut connection_manager = connection_manager.clone();
-        let res = match connection_manager
-            .set_options::<_, _, Option<String>>(&key, &val, opt)
-            .await
-        {
-            Ok(res) => res,
+        let stored = match storage.set(&key, &payload, ttl).await {
+            Ok(stored) => stored,
             Err(err) => {
                 tracing::error!("{:?}", err);
                 let details = "Failed to store the secret!";
@@ -55,7 +65,7 @@ impl SecretApi {
             }
         };
 
-        if res.is_none() {
+        if !stored {
             let details = "Failed to store the secret!";
             return AddSecretResponse::conflict(details);
         }
@@ -66,17 +76,11 @@ impl SecretApi {
     #[oai(path = "/secret/:key", method = "get", tag = ApiTags::Secret)]
     async fn get_status(
         &self,
-        Data(connection_manager): Data<&ConnectionManager>,
+        Data(storage): Data<&Arc<dyn Storage>>,
         Path(key): Path<String>,
     ) -> GetStatusResponse {
-        let mut connection_manager = connection_manager.clone();
-        let res = match redis::pipe()
-            .get(&key)
-            .ttl(&key)
-            .query_async::<(Option<String>, i64)>(&mut connection_manager)
-            .await
-        {
-            Ok(res) => res,
+        let entry = match storage.get(&key).await {
+            Ok(entry) => entry,
             Err(err) => {
                 tracing::error!("{:?}", err);
                 let details = "Failed to get the secret!";
@@ -84,31 +88,23 @@ impl SecretApi {
             }
         };
 
-        let (ttl, bar) = match res {
-            (Some(raw), ttl) => (ttl, raw.starts_with("1|")),
-            (None, _) => {
-                let details = "Secret not found!";
-                return GetStatusResponse::not_found(details);
-            }
+        let Some(entry) = entry else {
+            let details = "Secret not found!";
+            return GetStatusResponse::not_found(details);
         };
 
-        GetStatusResponse::ok(ttl, bar)
+        let bar = entry.val.starts_with(b"1|");
+        GetStatusResponse::ok(entry.ttl, bar)
     }
 
     #[oai(path = "/secret/:key", method = "post", tag = ApiTags::Secret)]
     async fn get_secret(
         &self,
-        Data(connection_manager): Data<&ConnectionManager>,
+        Data(storage): Data<&Arc<dyn Storage>>,
         Path(key): Path<String>,
     ) -> GetSecretResponse {
-        let mut connection_manager = connection_manager.clone();
-        let res = match redis::pipe()
-            .get(&key)
-            .ttl(&key)
-            .query_async::<(Option<String>, i64)>(&mut connection_manager)
-            .await
-        {
-            Ok(res) => res,
+        let entry = match storage.get(&key).await {
+            Ok(entry) => entry,
             Err(err) => {
                 tracing::error!("{:?}", err);
                 let details = "Failed to get the secret!";
@@ -116,24 +112,18 @@ impl SecretApi {
             }
         };
 
-        let (raw, ttl) = match res {
-            (Some(raw), ttl) => (raw, ttl),
-            (None, _) => {
-                let details = "Secret not found!";
-                return GetSecretResponse::not_found(details);
-            }
+        let Some(entry) = entry else {
+            let details = "Secret not found!";
+            return GetSecretResponse::not_found(details);
         };
 
-        let (bar, val) = match raw.split_once('|') {
-            Some((bar, val)) => (bar == "1", val),
-            None => {
-                let details = "Failed to parse the secret!";
-                return GetSecretResponse::internal_server_error(details);
-            }
+        let Some((bar, val)) = decode_payload(&entry.val) else {
+            let details = "Failed to parse the secret!";
+            return GetSecretResponse::internal_server_error(details);
         };
 
         if bar {
-            if let Err(err) = connection_manager.del::<_, ()>(&key).await {
+            if let Err(err) = storage.del(&key).await {
                 tracing::error!("{:?}", err);
                 let details = "Failed to delete the secret!";
                 return GetSecretResponse::internal_server_error(details);
@@ -142,6 +132,6 @@ impl SecretApi {
             return GetSecretResponse::ok(val, 0);
         }
 
-        GetSecretResponse::ok(val, ttl)
+        GetSecretResponse::ok(val, entry.ttl)
     }
 }

@@ -1,9 +1,11 @@
+use std::sync::Arc;
+
 use poem::web::Data;
 use poem_openapi::OpenApi;
-use redis::aio::ConnectionManager;
 
 use crate::models::api::ApiTags;
 use crate::models::api::health::HealthResponse;
+use crate::storage::Storage;
 
 pub struct HealthApi;
 
@@ -11,24 +13,13 @@ pub struct HealthApi;
 impl HealthApi {
     /// Health check
     #[oai(path = "/health", method = "get", tag = ApiTags::Health)]
-    async fn health(&self, Data(connection_manager): Data<&ConnectionManager>) -> HealthResponse {
-        let mut connection_manager = connection_manager.clone();
-        let res: String = match redis::cmd("PING")
-            .query_async(&mut connection_manager)
-            .await
-        {
-            Ok(res) => res,
+    async fn health(&self, Data(storage): Data<&Arc<dyn Storage>>) -> HealthResponse {
+        match storage.chk().await {
+            Ok(()) => HealthResponse::ok(),
             Err(err) => {
                 tracing::error!("{:?}", err);
-                return HealthResponse::service_unavailable();
+                HealthResponse::service_unavailable()
             }
-        };
-
-        if res != "PONG" {
-            tracing::error!("Unexpected PING response");
-            return HealthResponse::service_unavailable();
         }
-
-        HealthResponse::ok()
     }
 }
