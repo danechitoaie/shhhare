@@ -16,7 +16,7 @@ The server never sees your plaintext. Encryption and decryption happen entirely 
 - **Pluggable storage** — Redis (default) or [Cloudflare Workers KV](https://developers.cloudflare.com/kv/) via its REST API.
 - **Fast, tiny, single-binary backend** — async Rust on top of [Poem](https://github.com/poem-web/poem) + Redis or Cloudflare KV, with the SPA and docs embedded into the binary via `rust-embed`.
 - **OpenAPI out of the box** — `poem-openapi` produces a live schema served at `/doc/schema.json`, with a [Scalar](https://github.com/scalar/scalar) reference UI at `/doc/`.
-- **Modern frontend** — React 19 + TanStack Router + Tailwind v4 + shadcn/ui, with QR-code sharing via `react-qr-code`.
+- **Modern frontend** — React 19 (with the React Compiler) + TanStack Router + Tailwind v4, native `<dialog>` and form controls, and QR-code sharing via `react-qr-code`. It runs under a strict Content-Security-Policy.
 - **Containerized** — multi-stage Dockerfile produces a small `debian:stable-slim` image with a single static-ish binary.
 
 ---
@@ -64,22 +64,32 @@ The recipient sees a clear warning when the secret is set to burn after reading,
 
 ### Crypto flow
 
-1. The browser generates a random 256-bit AES-GCM key and a 12-byte IV, then encrypts the plaintext.
-2. The ciphertext (Base64) is `POST`ed to `/api/secret`, together with a TTL and a `bar` ("burn-after-read") flag.
+1. The browser packs the text and attachments into a binary container and pads it to a multiple of 256 bytes, so the server can't tell the exact length of short secrets (see [Payload format](#payload-format)).
+2. It generates a random 256-bit AES-GCM key and a 12-byte IV, and encrypts the container. The envelope `0x01 (version) ‖ iv ‖ ciphertext ‖ tag` is Base64-encoded and `POST`ed to `/api/secret`, together with a TTL and a `bar` ("burn-after-read") flag. The version byte is authenticated as additional data.
 3. The server stores the ciphertext under a random Base58-encoded 32-byte key with a TTL. In Redis, it stores `"<bar>|<ciphertext>"` with `EXPIRE` and `NX` to avoid collisions. In Cloudflare KV, the value is the ciphertext and the key's metadata holds `{ "bar", "exp" }`, with `expiration_ttl` set.
 4. The server returns the storage `key`. The browser builds a share link of the form:
 
    ```
-   https://your-host/s/<storage-key>#<base58(rawKey || iv)>
+   https://your-host/s/<storage-key>#<base58(rawKey)>
    ```
 
-5. On open, the recipient's browser fetches the ciphertext from `/api/secret/:key`, decrypts with the key from the fragment, and — if `bar` is set — the server deletes the entry on first read.
+5. On open, the recipient's browser checks the secret's status with `GET /api/secret/:key` (which doesn't consume it). Only when they click **Reveal secret** does it fetch the ciphertext with `POST /api/secret/:key` (and, if `bar` is set, the server deletes the entry), then decrypt it with the key from the fragment. The key's format is validated before that request, so a mistyped key never burns a secret.
+
+### Payload format
+
+The plaintext that gets encrypted is:
+
+```
+headerLength (u32, big-endian) ‖ header (UTF-8 JSON) ‖ file bytes… ‖ zero padding
+```
+
+The header is `{"t": "<text>", "f": [{"n": "<name>", "t": "<mime type>", "s": <size>}]}`, and the file bytes follow in header order. Attachments are stored as raw bytes (no Base64 inside the ciphertext), and the padding is capped so it never pushes a payload over `MAX_SIZE`. The app computes the exact size the server will check before encrypting anything, so the size meter is instant.
 
 ### Repository layout
 
 ```
 shhhare/        Rust backend (Poem + poem-openapi + Redis / Cloudflare KV)
-shhhare_app/    React 19 SPA (TanStack Router, Tailwind v4, shadcn/ui)
+shhhare_app/    React 19 SPA (TanStack Router, Tailwind v4)
 shhhare_doc/    Vue 3 app embedding Scalar API reference for /doc/
 Dockerfile      Multi-stage build: Node (frontends) → Rust (backend) → Debian
 ```
@@ -146,7 +156,9 @@ Server output:
 [ 🚀 ] Listening on http://127.0.0.1:8000
 ```
 
-For frontend hot-reload, run the Vite dev server in `shhhare_app` (`npm run dev`) alongside the backend and proxy `/api` to it as needed.
+For frontend hot-reload, run the Vite dev server in `shhhare_app` (`npm run dev`) alongside the backend. It proxies `/api/`, `/doc/` and `/favicon.svg` to `http://127.0.0.1:8000`.
+
+Run the frontend's checks with `npm run lint` and `npm test` (Vitest unit tests for the crypto and payload code).
 
 ---
 
@@ -218,5 +230,7 @@ Pings Redis (`PING`) or Cloudflare KV (namespace lookup). Returns `200 OK` when 
 - **Storage is the trust boundary for availability.** Redis or Cloudflare KV only ever sees ciphertext, but anyone with access to it can delete or expire entries.
 - **Cloudflare KV is eventually consistent.** A delete can take up to about 60 seconds to reach every edge location, so with KV, burn-after-reading is best-effort: a second read within that window may still succeed. KV also has no conditional write, so the `NX` collision check is skipped. Use Redis if you need strict one-time reads.
 - **`MAX_SIZE` caps DoS surface** for oversized payloads — tune it for your deployment.
+- **Strict browser hardening.** App pages are served with a `Content-Security-Policy` that only allows same-origin scripts, styles, fonts, workers and API calls (no inline code), plus `frame-ancestors 'none'`. Every response sets `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `X-Frame-Options: DENY` and `Cross-Origin-Opener-Policy: same-origin`. The `/doc/` page is the exception for CSP, because the Scalar UI needs inline styles.
+- **Secrets stay out of third-party tools.** The secret textarea opts out of spell-check, autofill and the Grammarly and password-manager extensions, and each encryption or decryption runs in a short-lived Web Worker that is terminated right after.
 
 ---

@@ -1,36 +1,17 @@
-export function fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            const result = reader.result as string;
-            const comma = result.indexOf(",");
-            resolve(comma >= 0 ? result.slice(comma + 1) : result);
-        };
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(file);
-    });
-}
+const CHUNK_SIZE = 0x8000;
 
-export function base64ToFile(base64: string, filename: string, mimeType: string = "application/octet-stream"): File {
-    const binary = atob(base64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
-    }
+const hasNative = typeof Uint8Array.fromBase64 === "function" && typeof Uint8Array.prototype.toBase64 === "function";
 
-    return new File([bytes], filename, { type: mimeType });
-}
-
-export function bytesToBase64(bytes: Uint8Array): string {
+export function toBase64Fallback(bytes: Uint8Array): string {
     let binary = "";
-    for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
+    for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK_SIZE));
     }
 
     return btoa(binary);
 }
 
-export function base64ToBytes(input: string): Uint8Array {
+export function fromBase64Fallback(input: string): Uint8Array<ArrayBuffer> {
     const binary = atob(input);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) {
@@ -38,4 +19,17 @@ export function base64ToBytes(input: string): Uint8Array {
     }
 
     return bytes;
+}
+
+export function toBase64(bytes: Uint8Array): string {
+    return hasNative ? bytes.toBase64() : toBase64Fallback(bytes);
+}
+
+export function fromBase64(input: string): Uint8Array<ArrayBuffer> {
+    return hasNative ? Uint8Array.fromBase64(input) : fromBase64Fallback(input);
+}
+
+/** Length of the standard (padded) base64 encoding of `n` bytes. */
+export function base64Length(n: number): number {
+    return 4 * Math.ceil(n / 3);
 }

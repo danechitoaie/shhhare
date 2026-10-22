@@ -23,6 +23,7 @@ use crate::handlers::doc::render_doc;
 use crate::handlers::favicon::{favicon_ico, favicon_png, favicon_svg};
 use crate::middleware::ErrorHandler;
 use crate::storage::Storage;
+use crate::template::APP_CSP;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -59,7 +60,19 @@ async fn main() -> anyhow::Result<()> {
     let app_cache_mw = {
         let cc_h_key = poem::http::header::CACHE_CONTROL;
         let cc_h_val = "no-cache, no-store, must-revalidate";
-        SetHeader::new().overriding(cc_h_key, cc_h_val)
+        let csp_h_key = poem::http::header::CONTENT_SECURITY_POLICY;
+        SetHeader::new()
+            .overriding(cc_h_key, cc_h_val)
+            .overriding(csp_h_key, APP_CSP)
+    };
+
+    let security_mw = {
+        use poem::http::header;
+        SetHeader::new()
+            .overriding(header::X_CONTENT_TYPE_OPTIONS, "nosniff")
+            .overriding(header::REFERRER_POLICY, "no-referrer")
+            .overriding(header::X_FRAME_OPTIONS, "DENY")
+            .overriding("cross-origin-opener-policy", "same-origin")
     };
 
     let ico_cache_mw = {
@@ -88,7 +101,8 @@ async fn main() -> anyhow::Result<()> {
         .data(cfg)
         .data(storage)
         .with(CatchPanic::new())
-        .with(ErrorHandler::new());
+        .with(ErrorHandler::new())
+        .with(security_mw);
 
     println!("[ 🚀 ] Listening on http://{bind}");
     Server::new(TcpListener::bind(bind)).run(app).await?;

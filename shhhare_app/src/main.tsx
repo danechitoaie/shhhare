@@ -6,7 +6,14 @@ import { routeTree } from "./routeTree.gen";
 import "@fontsource-variable/inter/wght.css";
 import "./main.css";
 
-const router = createRouter({ routeTree });
+const router = createRouter({
+    routeTree,
+    defaultPreload: false,
+    defaultPendingMs: 200,
+    defaultPendingMinMs: 300,
+    scrollRestoration: true,
+});
+
 declare module "@tanstack/react-router" {
     interface Register {
         router: typeof router;

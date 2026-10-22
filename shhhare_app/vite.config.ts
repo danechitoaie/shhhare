@@ -1,8 +1,12 @@
+/// <reference types="vitest/config" />
+import path from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
-import react from "@vitejs/plugin-react";
-import path from "path";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import babel from "@rolldown/plugin-babel";
 import { defineConfig } from "vite";
+
+const BACKEND = "http://127.0.0.1:8000";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -14,14 +18,15 @@ export default defineConfig(({ mode }) => {
                 quoteStyle: "double",
             }),
             react(),
+            babel({ presets: [reactCompilerPreset()] }),
             tailwindcss(),
         ],
         base: "",
-        publicDir: "static",
+        publicDir: false,
         build: {
             chunkSizeWarningLimit: 4096,
             sourcemap: mode !== "production",
-            rollupOptions: {
+            rolldownOptions: {
                 input: "src/main.tsx",
                 output: {
                     entryFileNames: "[name].js",
@@ -38,24 +43,30 @@ export default defineConfig(({ mode }) => {
                             }
                         }
 
-                        return "[name]-[hash][extname]";
+                        return "assets/[name]-[hash][extname]";
                     },
                 },
             },
             outDir: "../shhhare/static/app",
         },
+        worker: {
+            format: "es",
+        },
         resolve: {
             alias: {
-                "@": path.resolve(__dirname, "./src"),
+                "@": path.resolve(import.meta.dirname, "./src"),
             },
         },
         server: {
             proxy: {
-                "/api/": {
-                    target: "http://127.0.0.1:8000",
-                    changeOrigin: true,
-                },
+                "/api/": { target: BACKEND, changeOrigin: true },
+                "/doc/": { target: BACKEND, changeOrigin: true },
+                "/favicon.svg": { target: BACKEND, changeOrigin: true },
             },
+        },
+        test: {
+            environment: "node",
+            include: ["src/**/*.test.ts"],
         },
     };
 });

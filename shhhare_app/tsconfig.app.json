@@ -4,12 +4,15 @@
         "target": "es2023",
         "lib": [
             "ES2023",
-            "DOM"
+            "ESNext.TypedArrays",
+            "DOM",
+            "DOM.Iterable"
         ],
         "module": "esnext",
         "types": [
             "vite/client"
         ],
+        "allowArbitraryExtensions": true,
         "skipLibCheck": true,
         /* Bundler mode */
         "moduleResolution": "bundler",
