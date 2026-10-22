@@ -1,5 +1,5 @@
 use poem::http::StatusCode;
-use poem::http::header::CONTENT_TYPE;
+use poem::http::header::{CONTENT_SECURITY_POLICY, CONTENT_TYPE};
 use poem::{Body, IntoResponse, Response};
 use poem::{Endpoint, Middleware, Request, Result};
 use poem_openapi::error::{
@@ -7,7 +7,7 @@ use poem_openapi::error::{
     ParseRequestPayloadError,
 };
 
-use crate::template::get_err_html;
+use crate::template::{APP_CSP, get_err_html};
 
 pub struct ErrorHandler;
 
@@ -78,6 +78,7 @@ fn html_response(status: StatusCode) -> Response {
 
     Response::builder()
         .header(CONTENT_TYPE, "text/html; charset=utf-8")
+        .header(CONTENT_SECURITY_POLICY, APP_CSP)
         .status(status)
         .body(body)
 }

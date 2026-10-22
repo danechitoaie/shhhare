@@ -11,9 +11,10 @@ mod files;
 mod handlers;
 mod middleware;
 mod models;
+mod storage;
 mod template;
 
-use crate::config::Config;
+use crate::config::{Config, StorageKind};
 use crate::files::Static;
 use crate::handlers::api::health::HealthApi;
 use crate::handlers::api::secret::SecretApi;
@@ -21,6 +22,8 @@ use crate::handlers::app::render_app;
 use crate::handlers::doc::render_doc;
 use crate::handlers::favicon::{favicon_ico, favicon_png, favicon_svg};
 use crate::middleware::ErrorHandler;
+use crate::storage::Storage;
+use crate::template::APP_CSP;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -36,9 +39,14 @@ async fn main() -> anyhow::Result<()> {
     let ver = env!("CARGO_PKG_VERSION");
     let rev = option_env!("GIT_HASH").unwrap_or("0000000");
 
-    println!("[ 📦 ] Connecting to Redis...");
-    let client = redis::Client::open(cfg.redis_url.clone())?;
-    let connection_manager = redis::aio::ConnectionManager::new(client).await?;
+    let storage_cfg = cfg.storage_config();
+    let storage_name = match cfg.storage {
+        StorageKind::Redis => "Redis",
+        StorageKind::CloudflareKv => "Cloudflare KV",
+    };
+
+    println!("[ 📦 ] Connecting to {storage_name}...");
+    let storage = Storage::connect(storage_cfg).await?;
 
     let static_path = format!("/static/v{ver}-{rev}");
     let static_ep = {
@@ -52,7 +60,19 @@ async fn main() -> anyhow::Result<()> {
     let app_cache_mw = {
         let cc_h_key = poem::http::header::CACHE_CONTROL;
         let cc_h_val = "no-cache, no-store, must-revalidate";
-        SetHeader::new().overriding(cc_h_key, cc_h_val)
+        let csp_h_key = poem::http::header::CONTENT_SECURITY_POLICY;
+        SetHeader::new()
+            .overriding(cc_h_key, cc_h_val)
+            .overriding(csp_h_key, APP_CSP)
+    };
+
+    let security_mw = {
+        use poem::http::header;
+        SetHeader::new()
+            .overriding(header::X_CONTENT_TYPE_OPTIONS, "nosniff")
+            .overriding(header::REFERRER_POLICY, "no-referrer")
+            .overriding(header::X_FRAME_OPTIONS, "DENY")
+            .overriding("cross-origin-opener-policy", "same-origin")
     };
 
     let ico_cache_mw = {
@@ -79,9 +99,10 @@ async fn main() -> anyhow::Result<()> {
         .nest("/api", api)
         .nest(static_path, static_ep)
         .data(cfg)
-        .data(connection_manager)
+        .data(storage)
         .with(CatchPanic::new())
-        .with(ErrorHandler::new());
+        .with(ErrorHandler::new())
+        .with(security_mw);
 
     println!("[ 🚀 ] Listening on http://{bind}");
     Server::new(TcpListener::bind(bind)).run(app).await?;

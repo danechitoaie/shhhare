@@ -1,24 +1,23 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { EncryptPanel } from "@/components/index/encrypt";
-import { ShhharePanel } from "@/components/index/shhhare";
+import { createFileRoute } from "@tanstack/react-router";
+import { ComposePanel, type Created } from "@/components/index/compose";
+import { SharePanel } from "@/components/index/share";
+import { Card } from "@/components/ui/card";
 
 export const Route = createFileRoute("/")({
     component: Index,
 });
 
 function Index() {
-    const [storedSecret, setStoredSecret] = useState<{ secretKey: string; decryptionKey: string } | null>(null);
+    const [created, setCreated] = useState<Created | null>(null);
 
     return (
-        <div className="px-4">
-            <div className="my-10 px-12 py-8 max-w-lg lg:max-w-4xl mx-auto bg-background rounded-lg shadow-md border">
-                {storedSecret ? (
-                    <ShhharePanel onSetStoredSecret={setStoredSecret} storedSecret={storedSecret} />
-                ) : (
-                    <EncryptPanel onSetStoredSecret={setStoredSecret} />
-                )}
-            </div>
-        </div>
+        <Card>
+            {created ? (
+                <SharePanel created={created} onReset={() => setCreated(null)} />
+            ) : (
+                <ComposePanel onCreated={setCreated} />
+            )}
+        </Card>
     );
 }

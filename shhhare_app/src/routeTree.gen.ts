@@ -9,18 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from "./routes/__root"
-import { Route as SplatRouteImport } from "./routes/$"
 import { Route as IndexRouteImport } from "./routes/index"
+import { Route as SplatRouteImport } from "./routes/$"
 import { Route as SSecretKeyRouteImport } from "./routes/s.$secretKey"
 
-const SplatRoute = SplatRouteImport.update({
-  id: "/$",
-  path: "/$",
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: "/",
   path: "/",
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SplatRoute = SplatRouteImport.update({
+  id: "/$",
+  path: "/$",
   getParentRoute: () => rootRouteImport,
 } as any)
 const SSecretKeyRoute = SSecretKeyRouteImport.update({
@@ -61,18 +61,18 @@ export interface RootRouteChildren {
 
 declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    "/$": {
-      id: "/$"
-      path: "/$"
-      fullPath: "/$"
-      preLoaderRoute: typeof SplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     "/": {
       id: "/"
       path: "/"
       fullPath: "/"
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    "/$": {
+      id: "/$"
+      path: "/$"
+      fullPath: "/$"
+      preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     "/s/$secretKey": {

@@ -1,60 +1,58 @@
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 import { CheckIcon, CopyIcon, DownloadIcon, FileIcon, FlameIcon } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { base64ToFile } from "@/lib/base64";
-import { fmtBytes } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Callout } from "@/components/ui/callout";
+import { CardBody } from "@/components/ui/card";
+import { labelClassName } from "@/components/ui/label";
+import { useClipboard } from "@/hooks/use-clipboard";
+import type { Revealed, RevealedFile } from "@/lib/crypto-client";
+import { fmtBytes, fmtRemaining } from "@/lib/format";
 
-type RevealedFile = { n: string; t: string; c: string };
-type RevealedPayload = { t: string; f: RevealedFile[] };
+/** Revoking right after click() can cancel the download in some browsers, so wait a while. */
+const REVOKE_DELAY_MS = 60_000;
+
+function download(file: RevealedFile) {
+    const url = URL.createObjectURL(file.blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = file.name;
+    a.rel = "noopener";
+    a.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), REVOKE_DELAY_MS);
+}
 
 type RevealedPanelProps = {
-    payload: RevealedPayload;
+    revealed: Revealed;
     bar: boolean;
+    expiresAt: number | null;
+    now: number;
 };
 
-export function RevealedPanel({ payload, bar }: RevealedPanelProps) {
-    const [copied, setCopied] = useState<boolean>(false);
+export function RevealedPanel({ revealed, bar, expiresAt, now }: RevealedPanelProps) {
+    const headingRef = useRef<HTMLHeadingElement>(null);
+    const { copied, failed, copy } = useClipboard();
 
-    const onCopyText = async () => {
-        try {
-            await navigator.clipboard.writeText(payload.t);
-            setCopied(true);
-            window.setTimeout(() => setCopied(false), 1500);
-        } catch (err) {
-            console.error(err);
-        }
-    };
+    useEffect(() => {
+        headingRef.current?.focus();
+    }, []);
 
-    const onDownload = (file: RevealedFile) => {
-        const blob = base64ToFile(file.c, file.n, file.t || "application/octet-stream");
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = file.n;
-        a.click();
-        URL.revokeObjectURL(url);
-    };
-
-    const hasText = payload.t.length > 0;
-    const hasFiles = payload.f.length > 0;
+    const hasText = revealed.text.length > 0;
+    const hasFiles = revealed.files.length > 0;
 
     return (
-        <div className="flex flex-col gap-6">
+        <CardBody className="flex flex-col gap-6">
             <div>
-                <h1 className="text-lg font-semibold mb-2">Secret revealed</h1>
+                <h1 ref={headingRef} tabIndex={-1} className="mb-2 text-lg font-semibold outline-none">
+                    Secret revealed
+                </h1>
                 {bar ? (
-                    <div className="flex items-start gap-3 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3">
-                        <FlameIcon className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-                        <div className="text-sm">
-                            <div className="font-semibold text-destructive">Burn after reading</div>
-                            <div className="text-muted-foreground">
-                                This secret has been permanently destroyed. Save anything you need now.
-                            </div>
-                        </div>
-                    </div>
+                    <Callout variant="destructive" icon={<FlameIcon aria-hidden="true" />} title="Burn after reading">
+                        This secret has been permanently destroyed. Save anything you need now.
+                    </Callout>
                 ) : (
                     <p className="text-sm text-muted-foreground">
-                        Save or copy what you need. The link will keep working until it expires.
+                        Save or copy what you need. The link keeps working
+                        {expiresAt !== null && expiresAt > now ? ` for another ${fmtRemaining(expiresAt - now)}` : " until it expires"}.
                     </p>
                 )}
             </div>
@@ -62,60 +60,65 @@ export function RevealedPanel({ payload, bar }: RevealedPanelProps) {
             {hasText && (
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                        <Label>Message</Label>
-                        <button
-                            type="button"
-                            onClick={onCopyText}
-                            aria-label="Copy message"
-                            className="inline-flex items-center gap-1.5 px-2 py-1 rounded-sm text-[12px] text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
-                        >
-                            {copied ? <CheckIcon className="w-3.5 h-3.5" /> : <CopyIcon className="w-3.5 h-3.5" />}
-                            <span>{copied ? "Copied" : "Copy"}</span>
-                        </button>
+                        <span id="message-label" className={labelClassName}>
+                            Message
+                        </span>
+                        <Button variant="ghost" size="sm" onClick={() => copy(revealed.text)}>
+                            {copied ? <CheckIcon /> : <CopyIcon />}
+                            {copied ? "Copied" : "Copy"}
+                            <span className="sr-only"> message</span>
+                        </Button>
                     </div>
-                    <pre className="rounded-md border bg-muted/30 px-4 py-3 font-mono text-sm whitespace-pre-wrap wrap-break-word">
-                        {payload.t}
+                    <pre
+                        aria-labelledby="message-label"
+                        tabIndex={0}
+                        className="max-h-[60vh] overflow-auto rounded-md border bg-muted/30 px-4 py-3 font-mono text-sm wrap-break-word whitespace-pre-wrap outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                    >
+                        {revealed.text}
                     </pre>
+                    {failed && (
+                        <p role="alert" className="text-[12px] text-destructive">
+                            Couldn&rsquo;t access the clipboard. Select the text above and copy it manually.
+                        </p>
+                    )}
+                    <span aria-live="polite" className="sr-only">
+                        {copied ? "Message copied to the clipboard." : ""}
+                    </span>
                 </div>
             )}
 
             {hasFiles && (
                 <div className="flex flex-col gap-2">
-                    <Label>Attachments</Label>
-                    <div className="flex flex-col gap-1.5">
-                        {payload.f.map((f, i) => {
-                            const size = Math.floor((f.c.length * 3) / 4);
-                            return (
-                                <div
-                                    key={i}
-                                    className="flex items-center gap-2 px-2 py-1.5 rounded-sm bg-background border text-[13px]"
-                                >
-                                    <FileIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                                    <span className="font-mono truncate flex-1" title={f.n}>
-                                        {f.n}
-                                    </span>
-                                    <span className="font-mono text-xs text-muted-foreground shrink-0">
-                                        {fmtBytes(size)}
-                                    </span>
-                                    <button
-                                        type="button"
-                                        onClick={() => onDownload(f)}
-                                        aria-label={`Download ${f.n}`}
-                                        className="inline-flex items-center gap-1.5 px-2 py-1 rounded-sm text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer"
-                                    >
-                                        <DownloadIcon className="w-3.5 h-3.5" />
-                                        <span>Download</span>
-                                    </button>
-                                </div>
-                            );
-                        })}
-                    </div>
+                    <span id="attachments-label" className={labelClassName}>
+                        Attachments
+                    </span>
+                    <ul aria-labelledby="attachments-label" className="flex flex-col gap-1.5">
+                        {revealed.files.map((file, i) => (
+                            <li
+                                key={i}
+                                className="flex items-center gap-2 rounded-sm border bg-background py-1 pr-1 pl-2 text-[13px]"
+                            >
+                                <FileIcon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                                <span className="flex-1 truncate font-mono" title={file.name}>
+                                    {file.name}
+                                </span>
+                                <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                                    {fmtBytes(file.blob.size)}
+                                </span>
+                                <Button variant="ghost" size="sm" onClick={() => download(file)}>
+                                    <DownloadIcon />
+                                    <span className="hidden sm:inline">Download</span>
+                                    <span className="sr-only">{` ${file.name}`}</span>
+                                </Button>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             )}
 
             {!hasText && !hasFiles && (
-                <p className="text-sm text-muted-foreground text-center">This secret was empty.</p>
+                <p className="text-center text-sm text-muted-foreground">This secret was empty.</p>
             )}
-        </div>
+        </CardBody>
     );
 }
